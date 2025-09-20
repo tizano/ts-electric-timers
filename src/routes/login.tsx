@@ -32,6 +32,8 @@ function Layout() {
         }
       );
 
+      console.info(`Authentication result:`, result);
+
       if (error) {
         console.error(`Authentication error:`, error);
         setError(error || `Authentication failed`);

@@ -12,7 +12,6 @@
     "db:seed": "bun run --env-file=.env src/db/seed/seed.ts",
     "serve": "vite preview",
     "test": "echo 'No tests yet'",
-    "lint:check": "eslint .",
     "check": "biome check --write .",
     "check-types": "tsc -b",
     "rename:sound": "bun scripts/rename.ts public/assets/sounds/"

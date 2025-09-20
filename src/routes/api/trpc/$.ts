@@ -2,13 +2,11 @@ import { db } from '@/db';
 import { auth } from '@/lib/auth';
 import { router } from '@/lib/trpc';
 import { timersRouter } from '@/lib/trpc/timers';
-import { todosRouter } from '@/lib/trpc/todos';
 import { usersRouter } from '@/lib/trpc/users';
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 
 export const appRouter = router({
-  todos: todosRouter,
   users: usersRouter,
   timers: timersRouter,
 });

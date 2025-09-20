@@ -2,7 +2,6 @@ import { authClient } from '@/lib/auth-client';
 import { timerCollection } from '@/lib/collections';
 import { useLiveQuery } from '@tanstack/react-db';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
 
 export const Route = createFileRoute(`/_authenticated/`)({
   component: IndexRedirect,
@@ -33,12 +32,6 @@ function IndexRedirect() {
   const { data: timers, isLoading } = useLiveQuery((q) =>
     q.from({ timerCollection })
   );
-
-  useEffect(() => {
-    if (timers.length > 0) {
-      const firstTimer = timers[0];
-    }
-  }, [timers, navigate]);
 
   return (
     <div className="p-6">
