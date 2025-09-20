@@ -1,6 +1,7 @@
 CREATE TYPE "public"."adjustment_type" AS ENUM('ADD_TIME', 'REMOVE_TIME', 'RESCHEDULE');--> statement-breakpoint
 CREATE TYPE "public"."execution_status" AS ENUM('STARTED', 'COMPLETED', 'STOPPED', 'INTERRUPTED');--> statement-breakpoint
 CREATE TYPE "public"."timer_status" AS ENUM('PENDING', 'RUNNING', 'COMPLETED', 'PAUSED', 'CANCELLED');--> statement-breakpoint
+CREATE TYPE "public"."trigger_type" AS ENUM('VIDEO', 'IMAGE', 'SOUND', 'IMAGE_SOUND', 'VIDEO_SOUND', 'GALLERY');--> statement-breakpoint
 CREATE TYPE "public"."participant_role" AS ENUM('OWNER', 'COORDINATOR', 'PARTICIPANT', 'VIEW_ONLY');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -54,13 +55,17 @@ CREATE TABLE "timer" (
 	"id" text PRIMARY KEY NOT NULL,
 	"wedding_event_id" text NOT NULL,
 	"name" text NOT NULL,
-	"description" text,
-	"scheduled_start_time" timestamp NOT NULL,
-	"duration_minutes" integer NOT NULL,
+	"description_fr" text,
+	"description_en" text,
+	"description_br" text,
+	"scheduled_start_time" timestamp,
+	"scheduled_start_trigger" timestamp,
+	"duration_minutes" integer,
 	"status" timer_status DEFAULT 'PENDING' NOT NULL,
-	"sound_file_url" text,
-	"image_file_url" text,
-	"order_index" integer NOT NULL,
+	"is_manual" boolean DEFAULT false NOT NULL,
+	"is_punctual" boolean DEFAULT false NOT NULL,
+	"assets_url" text[],
+	"trigger_type" "trigger_type" DEFAULT 'SOUND' NOT NULL,
 	"created_by_id" text NOT NULL,
 	"last_modified_by_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -88,12 +93,6 @@ CREATE TABLE "timer_execution" (
 	"started_by_id" text NOT NULL,
 	"stopped_by_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "todo" (
-	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "todo_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
-	"text" text NOT NULL,
-	"completed" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "wedding_event" (

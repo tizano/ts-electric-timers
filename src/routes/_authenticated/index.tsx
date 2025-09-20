@@ -1,5 +1,5 @@
 import { authClient } from '@/lib/auth-client';
-import { todoCollection } from '@/lib/collections';
+import { timerCollection } from '@/lib/collections';
 import { useLiveQuery } from '@tanstack/react-db';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
@@ -22,7 +22,7 @@ export const Route = createFileRoute(`/_authenticated/`)({
     }
   },
   loader: async () => {
-    await Promise.all([todoCollection.preload()]);
+    await Promise.all([timerCollection.preload()]);
 
     return null;
   },
@@ -30,30 +30,30 @@ export const Route = createFileRoute(`/_authenticated/`)({
 
 function IndexRedirect() {
   const navigate = useNavigate();
-  const { data: todos, isLoading } = useLiveQuery((q) =>
-    q.from({ todoCollection })
+  const { data: timers, isLoading } = useLiveQuery((q) =>
+    q.from({ timerCollection })
   );
 
   useEffect(() => {
-    if (todos.length > 0) {
-      const firstTodo = todos[0];
+    if (timers.length > 0) {
+      const firstTimer = timers[0];
     }
-  }, [todos, navigate]);
+  }, [timers, navigate]);
 
   return (
     <div className="p-6">
       <div className="text-center">
         {!isLoading &&
-          todos.length > 0 &&
-          todos.map((todo) => (
-            <div key={todo.id} className="mb-4 p-4 border rounded shadow">
-              <h2 className="text-xl font-bold mb-2">{todo.text}</h2>
+          timers.length > 0 &&
+          timers.map((timer) => (
+            <div key={timer.id} className="mb-4 p-4 border rounded shadow">
+              <h2 className="text-xl font-bold mb-2">{timer.name}</h2>
               <p className="text-gray-700">
-                {todo.completed ? 'Completed' : 'Not Completed'}
+                {timer.status === 'PENDING' ? 'En cours' : 'Not Completed'}
               </p>
             </div>
           ))}
-        {isLoading && <p className="text-gray-500">Loading todos...</p>}
+        {isLoading && <p className="text-gray-500">Loading timers...</p>}
       </div>
     </div>
   );

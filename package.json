@@ -14,7 +14,8 @@
     "test": "echo 'No tests yet'",
     "lint:check": "eslint .",
     "check": "biome check --write .",
-    "check-types": "tsc -b"
+    "check-types": "tsc -b",
+    "rename:sound": "bun scripts/rename.ts public/assets/sounds/"
   },
   "dependencies": {
     "@electric-sql/client": "^1.0.10",

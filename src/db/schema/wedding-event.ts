@@ -10,7 +10,7 @@ export const PARTICIPANT_ROLES = [
 
 export const participantRoleEnum = pgEnum(
   'participant_role',
-  PARTICIPANT_ROLES,
+  PARTICIPANT_ROLES
 );
 
 // Nouvelles tables pour la gestion de timing

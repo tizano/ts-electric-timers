@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
 import { ServerRoute as ApiTodosServerRouteImport } from './routes/api/todos'
+import { ServerRoute as ApiTimersServerRouteImport } from './routes/api/timers'
 import { ServerRoute as ApiAuthServerRouteImport } from './routes/api/auth'
 import { ServerRoute as ApiTrpcSplatServerRouteImport } from './routes/api/trpc/$'
 
@@ -43,6 +44,11 @@ const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
 const ApiTodosServerRoute = ApiTodosServerRouteImport.update({
   id: '/api/todos',
   path: '/api/todos',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiTimersServerRoute = ApiTimersServerRouteImport.update({
+  id: '/api/timers',
+  path: '/api/timers',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAuthServerRoute = ApiAuthServerRouteImport.update({
@@ -84,12 +90,14 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/timers': typeof ApiTimersServerRoute
   '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/timers': typeof ApiTimersServerRoute
   '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
@@ -97,20 +105,33 @@ export interface FileServerRoutesByTo {
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/timers': typeof ApiTimersServerRoute
   '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/auth' | '/api/todos' | '/api/users' | '/api/trpc/$'
+  fullPaths:
+    | '/api/auth'
+    | '/api/timers'
+    | '/api/todos'
+    | '/api/users'
+    | '/api/trpc/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth' | '/api/todos' | '/api/users' | '/api/trpc/$'
-  id: '__root__' | '/api/auth' | '/api/todos' | '/api/users' | '/api/trpc/$'
+  to: '/api/auth' | '/api/timers' | '/api/todos' | '/api/users' | '/api/trpc/$'
+  id:
+    | '__root__'
+    | '/api/auth'
+    | '/api/timers'
+    | '/api/todos'
+    | '/api/users'
+    | '/api/trpc/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiAuthServerRoute: typeof ApiAuthServerRoute
+  ApiTimersServerRoute: typeof ApiTimersServerRoute
   ApiTodosServerRoute: typeof ApiTodosServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRoute
   ApiTrpcSplatServerRoute: typeof ApiTrpcSplatServerRoute
@@ -157,6 +178,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiTodosServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/timers': {
+      id: '/api/timers'
+      path: '/api/timers'
+      fullPath: '/api/timers'
+      preLoaderRoute: typeof ApiTimersServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/auth': {
       id: '/api/auth'
       path: '/api/auth'
@@ -195,6 +223,7 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthServerRoute: ApiAuthServerRoute,
+  ApiTimersServerRoute: ApiTimersServerRoute,
   ApiTodosServerRoute: ApiTodosServerRoute,
   ApiUsersServerRoute: ApiUsersServerRoute,
   ApiTrpcSplatServerRoute: ApiTrpcSplatServerRoute,

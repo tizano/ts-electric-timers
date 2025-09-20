@@ -6,6 +6,8 @@ import {
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
+import { createSchemaFactory } from 'drizzle-zod';
+import z from 'zod';
 import { user } from './auth';
 import { weddingEvent } from './wedding-event';
 
@@ -30,6 +32,15 @@ export const TIMER_STATUSES = [
   'CANCELLED',
 ] as const;
 
+export const TRIGGER_TYPES = [
+  'VIDEO',
+  'IMAGE',
+  'SOUND',
+  'IMAGE_SOUND',
+  'VIDEO_SOUND',
+  'GALLERY',
+] as const;
+
 // Enums
 export const timerStatusEnum = pgEnum('timer_status', TIMER_STATUSES);
 
@@ -40,19 +51,26 @@ export const executionStatusEnum = pgEnum(
 
 export const adjustmentTypeEnum = pgEnum('adjustment_type', ADJUSTMENT_TYPES);
 
+export const triggerTypeEnum = pgEnum('trigger_type', TRIGGER_TYPES);
+
 export const timer = pgTable('timer', {
   id: text('id').primaryKey(),
   weddingEventId: text('wedding_event_id')
     .notNull()
     .references(() => weddingEvent.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
-  description: text('description'),
-  scheduledStartTime: timestamp('scheduled_start_time').notNull(),
-  durationMinutes: integer('duration_minutes').notNull(),
+  descriptionFr: text('description_fr'),
+  descriptionEn: text('description_en'),
+  descriptionBr: text('description_br'),
+  scheduledStartTime: timestamp('scheduled_start_time'),
+  scheduledStartTrigger: timestamp('scheduled_start_trigger'),
+  durationMinutes: integer('duration_minutes'),
   status: timerStatusEnum('status').notNull().default('PENDING'),
-  soundFileUrl: text('sound_file_url'),
-  imageFileUrl: text('image_file_url'),
-  orderIndex: integer('order_index').notNull(),
+  isManual: boolean('is_manual').notNull().default(false),
+  isPunctual: boolean('is_punctual').notNull().default(false),
+  assetsUrl: text('assets_url').array(),
+  triggerType: triggerTypeEnum('trigger_type').notNull().default('SOUND'),
+  orderIndex: integer('order_index').notNull().default(0),
   createdById: text('created_by_id')
     .notNull()
     .references(() => user.id),
@@ -91,3 +109,14 @@ export const timerAdjustment = pgTable('timer_adjustment', {
     .references(() => user.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+const { createInsertSchema, createSelectSchema, createUpdateSchema } =
+  createSchemaFactory({ zodInstance: z });
+
+export const selectTimerSchema = createSelectSchema(timer);
+export const createTimerSchema = createInsertSchema(timer);
+export const updateTimerSchema = createUpdateSchema(timer);
+
+export type Timer = z.infer<typeof selectTimerSchema>;
+export type NewTimer = z.infer<typeof createTimerSchema>;
+export type UpdateTimer = z.infer<typeof updateTimerSchema>;

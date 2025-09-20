@@ -1,6 +1,6 @@
 {
-  "id": "98d71dfa-2578-4890-8d38-d75325c78bb5",
-  "prevId": "1d5c9c22-b187-47f0-8352-3793bc0f5a7d",
+  "id": "9b29a973-2cbc-403d-970d-65877dfd7c54",
+  "prevId": "b040e537-1302-46bb-93d7-0b52cd5802b3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -326,8 +326,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "description_fr": {
+          "name": "description_fr",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description_en": {
+          "name": "description_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description_br": {
+          "name": "description_br",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -336,13 +348,19 @@
           "name": "scheduled_start_time",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "scheduled_start_trigger": {
+          "name": "scheduled_start_trigger",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "duration_minutes": {
           "name": "duration_minutes",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "status": {
           "name": "status",
@@ -352,23 +370,40 @@
           "notNull": true,
           "default": "'PENDING'"
         },
-        "sound_file_url": {
-          "name": "sound_file_url",
-          "type": "text",
+        "is_manual": {
+          "name": "is_manual",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_punctual": {
+          "name": "is_punctual",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "assets_url": {
+          "name": "assets_url",
+          "type": "text[]",
           "primaryKey": false,
           "notNull": false
         },
-        "image_file_url": {
-          "name": "image_file_url",
-          "type": "text",
+        "trigger_type": {
+          "name": "trigger_type",
+          "type": "trigger_type",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'SOUND'"
         },
         "order_index": {
           "name": "order_index",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 0
         },
         "created_by_id": {
           "name": "created_by_id",
@@ -645,83 +680,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.todo": {
-      "name": "todo",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "identity": {
-            "type": "always",
-            "name": "todo_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "2147483647",
-            "cache": "1",
-            "cycle": false
-          }
-        },
-        "text": {
-          "name": "text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "completed": {
-          "name": "completed",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_ids": {
-          "name": "user_ids",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "todo_user_id_user_id_fk": {
-          "name": "todo_user_id_user_id_fk",
-          "tableFrom": "todo",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.wedding_event": {
       "name": "wedding_event",
       "schema": "",
@@ -901,6 +859,18 @@
         "COMPLETED",
         "PAUSED",
         "CANCELLED"
+      ]
+    },
+    "public.trigger_type": {
+      "name": "trigger_type",
+      "schema": "public",
+      "values": [
+        "VIDEO",
+        "IMAGE",
+        "SOUND",
+        "IMAGE_SOUND",
+        "VIDEO_SOUND",
+        "GALLERY"
       ]
     },
     "public.participant_role": {

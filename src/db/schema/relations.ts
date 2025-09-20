@@ -1,12 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { account, session, user } from './auth';
-import {
-  timer,
-  timerAdjustment,
-  timerExecution,
-  weddingEvent,
-  weddingParticipant,
-} from './timer';
+import { timer, timerAdjustment, timerExecution } from './timer';
+import { weddingEvent, weddingParticipant } from './wedding-event';
 
 // Relations Drizzle
 export const userRelations = relations(user, ({ many }) => ({
