@@ -1,4 +1,5 @@
 import { neon, neonConfig } from '@neondatabase/serverless';
+import { serverOnly } from '@tanstack/react-start';
 import { drizzle } from 'drizzle-orm/neon-http';
 import ws from 'ws';
 
@@ -8,4 +9,7 @@ neonConfig.webSocketConstructor = ws;
 // neonConfig.poolQueryViaFetch = true
 
 const sql = neon(process.env.DATABASE_URL!);
-export const db = drizzle(sql);
+
+const getDatabase = serverOnly(() => drizzle(sql));
+
+export const db = getDatabase();

@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth/auth';
 import type { User } from 'better-auth';
 import { config } from 'dotenv';
 import { reset } from 'drizzle-seed';
@@ -135,7 +135,7 @@ async function seedWeddingData() {
       id: 'timer-1',
       orderIndex: 1,
       name: 'Video + Sound - Landing of the bride and groom',
-      scheduledStartTime: new Date('2025-10-25T16:00:00.000Z'),
+      scheduledStartTime: new Date('2025-10-25T16:00:00.000Z'), // 16h à Recife (UTC-3)
       durationMinutes: 30,
       status: 'PENDING' as const,
       weddingEventId: weddingEvents[0]?.id,

@@ -8,7 +8,7 @@ import { config } from 'dotenv';
  * @returns The prepared Electric SQL origin URL
  */
 
-config({ path: '/.env' });
+config();
 
 export function prepareElectricUrl(requestUrl: string): URL {
   const url = new URL(requestUrl);

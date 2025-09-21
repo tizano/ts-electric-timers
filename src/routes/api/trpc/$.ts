@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth/auth';
 import { router } from '@/lib/trpc';
 import { timersRouter } from '@/lib/trpc/timers';
 import { usersRouter } from '@/lib/trpc/users';

@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth/auth';
 import { prepareElectricUrl, proxyElectricRequest } from '@/lib/electric-proxy';
 import { createServerFileRoute } from '@tanstack/react-start/server';
 

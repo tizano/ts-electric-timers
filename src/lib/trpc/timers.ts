@@ -1,5 +1,6 @@
-import { createTimerSchema, timer } from '@/db/schema/timer';
-import { authedProcedure, generateTxId, router } from '@/lib/trpc';
+import { createTimerSchema, timer, timerAsset } from '@/db/schema/timer';
+import { authedProcedure, generateTxId, procedure, router } from '@/lib/trpc';
+import { eq } from 'drizzle-orm';
 
 export const timersRouter = router({
   create: authedProcedure
@@ -15,6 +16,15 @@ export const timersRouter = router({
       });
       return result;
     }),
+  list: procedure.query(async ({ ctx }) => {
+    const items = await ctx.db
+      .select()
+      .from(timer)
+      .innerJoin(timerAsset, eq(timer.id, timerAsset.timerId))
+      .where(eq(timer.weddingEventId, 'wedding-event-1'))
+      .orderBy(timer.orderIndex);
+    return items;
+  }),
 
   // Add update and delete following the same pattern...
 });

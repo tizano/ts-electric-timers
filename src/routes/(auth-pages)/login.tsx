@@ -1,0 +1,103 @@
+import authClient from '@/lib/auth/auth-client';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+
+export const Route = createFileRoute(`/(auth-pages)/login`)({
+  component: LogIn,
+});
+
+function LogIn() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: `${window.location.origin}/dashboard`,
+      });
+
+      if (error) {
+        console.error(`Authentication error:`, error);
+        setError(error || `Authentication failed`);
+      }
+    } catch (err) {
+      console.error(`Unexpected error:`, err);
+      setError(`An unexpected error occurred`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md w-full flex flex-col space-y-6">
+      <div>
+        <h1 className="text-center text-5xl font-extrabold text-gray-900">
+          Tony et Neka
+        </h1>
+        <h2 className="mt-6 text-center text-xl font-bold text-gray-900">
+          Sign in to your account
+        </h2>
+      </div>
+      <form className="flex flex-col space-y-8" onSubmit={handleSubmit}>
+        <div className="flex flex-col space-y-4">
+          <div>
+            <label htmlFor="email" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-900 focus:border-indigo-900 focus:z-10 rounded-md"
+              placeholder="Email address"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-900 focus:border-indigo-900 focus:z-10 rounded-md"
+              placeholder="Password"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <div className="rounded-md bg-red-200 p-4">
+            <div className="text-sm text-red-700">{error}</div>
+          </div>
+        )}
+
+        <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-indigo-900 hover:bg-indigo-950 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer transition-colors"
+          >
+            {isLoading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

@@ -11,39 +11,70 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as publicRouteRouteImport } from './routes/(public)/route'
+import { Route as authenticatedRouteRouteImport } from './routes/(authenticated)/route'
+import { Route as authPagesRouteRouteImport } from './routes/(auth-pages)/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as publicTimersRouteImport } from './routes/(public)/timers'
+import { Route as authPagesLoginRouteImport } from './routes/(auth-pages)/login'
+import { Route as authenticateddashboardDashboardRouteImport } from './routes/(authenticated)/(dashboard)/dashboard'
+import { Route as authenticateddashboardTimersTimerIdRouteRouteImport } from './routes/(authenticated)/(dashboard)/timers/$timerId/route'
+import { Route as authenticateddashboardTimersTimerIdEditRouteImport } from './routes/(authenticated)/(dashboard)/timers/$timerId/edit'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
-import { ServerRoute as ApiTodosServerRouteImport } from './routes/api/todos'
 import { ServerRoute as ApiTimersServerRouteImport } from './routes/api/timers'
 import { ServerRoute as ApiAuthServerRouteImport } from './routes/api/auth'
 import { ServerRoute as ApiTrpcSplatServerRouteImport } from './routes/api/trpc/$'
 
 const rootServerRouteImport = createServerRootRoute()
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const publicRouteRoute = publicRouteRouteImport.update({
+  id: '/(public)',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const authenticatedRouteRoute = authenticatedRouteRouteImport.update({
+  id: '/(authenticated)',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const authPagesRouteRoute = authPagesRouteRouteImport.update({
+  id: '/(auth-pages)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
+const publicTimersRoute = publicTimersRouteImport.update({
+  id: '/timers',
+  path: '/timers',
+  getParentRoute: () => publicRouteRoute,
+} as any)
+const authPagesLoginRoute = authPagesLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => authPagesRouteRoute,
+} as any)
+const authenticateddashboardDashboardRoute =
+  authenticateddashboardDashboardRouteImport.update({
+    id: '/(dashboard)/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => authenticatedRouteRoute,
+  } as any)
+const authenticateddashboardTimersTimerIdRouteRoute =
+  authenticateddashboardTimersTimerIdRouteRouteImport.update({
+    id: '/(dashboard)/timers/$timerId',
+    path: '/timers/$timerId',
+    getParentRoute: () => authenticatedRouteRoute,
+  } as any)
+const authenticateddashboardTimersTimerIdEditRoute =
+  authenticateddashboardTimersTimerIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => authenticateddashboardTimersTimerIdRouteRoute,
+  } as any)
 const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
   id: '/api/users',
   path: '/api/users',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiTodosServerRoute = ApiTodosServerRouteImport.update({
-  id: '/api/todos',
-  path: '/api/todos',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiTimersServerRoute = ApiTimersServerRouteImport.update({
@@ -63,42 +94,78 @@ const ApiTrpcSplatServerRoute = ApiTrpcSplatServerRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/login': typeof LoginRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof publicRouteRouteWithChildren
+  '/login': typeof authPagesLoginRoute
+  '/timers': typeof publicTimersRoute
+  '/dashboard': typeof authenticateddashboardDashboardRoute
+  '/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
+  '/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof publicRouteRouteWithChildren
+  '/login': typeof authPagesLoginRoute
+  '/timers': typeof publicTimersRoute
+  '/dashboard': typeof authenticateddashboardDashboardRoute
+  '/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
+  '/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
+  '/(auth-pages)': typeof authPagesRouteRouteWithChildren
+  '/(authenticated)': typeof authenticatedRouteRouteWithChildren
+  '/(public)': typeof publicRouteRouteWithChildren
+  '/(auth-pages)/login': typeof authPagesLoginRoute
+  '/(public)/timers': typeof publicTimersRoute
+  '/(authenticated)/(dashboard)/dashboard': typeof authenticateddashboardDashboardRoute
+  '/(authenticated)/(dashboard)/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
+  '/(authenticated)/(dashboard)/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/timers'
+    | '/dashboard'
+    | '/timers/$timerId'
+    | '/timers/$timerId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_authenticated' | '/login' | '/_authenticated/'
+  to:
+    | '/'
+    | '/login'
+    | '/timers'
+    | '/dashboard'
+    | '/timers/$timerId'
+    | '/timers/$timerId/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/(auth-pages)'
+    | '/(authenticated)'
+    | '/(public)'
+    | '/(auth-pages)/login'
+    | '/(public)/timers'
+    | '/(authenticated)/(dashboard)/dashboard'
+    | '/(authenticated)/(dashboard)/timers/$timerId'
+    | '/(authenticated)/(dashboard)/timers/$timerId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  IndexRoute: typeof IndexRoute
+  authPagesRouteRoute: typeof authPagesRouteRouteWithChildren
+  authenticatedRouteRoute: typeof authenticatedRouteRouteWithChildren
+  publicRouteRoute: typeof publicRouteRouteWithChildren
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth': typeof ApiAuthServerRoute
   '/api/timers': typeof ApiTimersServerRoute
-  '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth': typeof ApiAuthServerRoute
   '/api/timers': typeof ApiTimersServerRoute
-  '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
@@ -106,59 +173,88 @@ export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth': typeof ApiAuthServerRoute
   '/api/timers': typeof ApiTimersServerRoute
-  '/api/todos': typeof ApiTodosServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths:
-    | '/api/auth'
-    | '/api/timers'
-    | '/api/todos'
-    | '/api/users'
-    | '/api/trpc/$'
+  fullPaths: '/api/auth' | '/api/timers' | '/api/users' | '/api/trpc/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth' | '/api/timers' | '/api/todos' | '/api/users' | '/api/trpc/$'
-  id:
-    | '__root__'
-    | '/api/auth'
-    | '/api/timers'
-    | '/api/todos'
-    | '/api/users'
-    | '/api/trpc/$'
+  to: '/api/auth' | '/api/timers' | '/api/users' | '/api/trpc/$'
+  id: '__root__' | '/api/auth' | '/api/timers' | '/api/users' | '/api/trpc/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiAuthServerRoute: typeof ApiAuthServerRoute
   ApiTimersServerRoute: typeof ApiTimersServerRoute
-  ApiTodosServerRoute: typeof ApiTodosServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRoute
   ApiTrpcSplatServerRoute: typeof ApiTrpcSplatServerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/(public)': {
+      id: '/(public)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof publicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(authenticated)': {
+      id: '/(authenticated)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof authenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth-pages)': {
+      id: '/(auth-pages)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof authPagesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/timers': {
+      id: '/(public)/timers'
+      path: '/timers'
+      fullPath: '/timers'
+      preLoaderRoute: typeof publicTimersRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(auth-pages)/login': {
+      id: '/(auth-pages)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authPagesLoginRouteImport
+      parentRoute: typeof authPagesRouteRoute
+    }
+    '/(authenticated)/(dashboard)/dashboard': {
+      id: '/(authenticated)/(dashboard)/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof authenticateddashboardDashboardRouteImport
+      parentRoute: typeof authenticatedRouteRoute
+    }
+    '/(authenticated)/(dashboard)/timers/$timerId': {
+      id: '/(authenticated)/(dashboard)/timers/$timerId'
+      path: '/timers/$timerId'
+      fullPath: '/timers/$timerId'
+      preLoaderRoute: typeof authenticateddashboardTimersTimerIdRouteRouteImport
+      parentRoute: typeof authenticatedRouteRoute
+    }
+    '/(authenticated)/(dashboard)/timers/$timerId/edit': {
+      id: '/(authenticated)/(dashboard)/timers/$timerId/edit'
+      path: '/edit'
+      fullPath: '/timers/$timerId/edit'
+      preLoaderRoute: typeof authenticateddashboardTimersTimerIdEditRouteImport
+      parentRoute: typeof authenticateddashboardTimersTimerIdRouteRoute
     }
   }
 }
@@ -169,13 +265,6 @@ declare module '@tanstack/react-start/server' {
       path: '/api/users'
       fullPath: '/api/users'
       preLoaderRoute: typeof ApiUsersServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/todos': {
-      id: '/api/todos'
-      path: '/api/todos'
-      fullPath: '/api/todos'
-      preLoaderRoute: typeof ApiTodosServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/timers': {
@@ -202,21 +291,64 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+interface authPagesRouteRouteChildren {
+  authPagesLoginRoute: typeof authPagesLoginRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+const authPagesRouteRouteChildren: authPagesRouteRouteChildren = {
+  authPagesLoginRoute: authPagesLoginRoute,
 }
 
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
+const authPagesRouteRouteWithChildren = authPagesRouteRoute._addFileChildren(
+  authPagesRouteRouteChildren,
+)
+
+interface authenticateddashboardTimersTimerIdRouteRouteChildren {
+  authenticateddashboardTimersTimerIdEditRoute: typeof authenticateddashboardTimersTimerIdEditRoute
+}
+
+const authenticateddashboardTimersTimerIdRouteRouteChildren: authenticateddashboardTimersTimerIdRouteRouteChildren =
+  {
+    authenticateddashboardTimersTimerIdEditRoute:
+      authenticateddashboardTimersTimerIdEditRoute,
+  }
+
+const authenticateddashboardTimersTimerIdRouteRouteWithChildren =
+  authenticateddashboardTimersTimerIdRouteRoute._addFileChildren(
+    authenticateddashboardTimersTimerIdRouteRouteChildren,
+  )
+
+interface authenticatedRouteRouteChildren {
+  authenticateddashboardDashboardRoute: typeof authenticateddashboardDashboardRoute
+  authenticateddashboardTimersTimerIdRouteRoute: typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
+}
+
+const authenticatedRouteRouteChildren: authenticatedRouteRouteChildren = {
+  authenticateddashboardDashboardRoute: authenticateddashboardDashboardRoute,
+  authenticateddashboardTimersTimerIdRouteRoute:
+    authenticateddashboardTimersTimerIdRouteRouteWithChildren,
+}
+
+const authenticatedRouteRouteWithChildren =
+  authenticatedRouteRoute._addFileChildren(authenticatedRouteRouteChildren)
+
+interface publicRouteRouteChildren {
+  publicTimersRoute: typeof publicTimersRoute
+}
+
+const publicRouteRouteChildren: publicRouteRouteChildren = {
+  publicTimersRoute: publicTimersRoute,
+}
+
+const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
+  publicRouteRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  LoginRoute: LoginRoute,
+  IndexRoute: IndexRoute,
+  authPagesRouteRoute: authPagesRouteRouteWithChildren,
+  authenticatedRouteRoute: authenticatedRouteRouteWithChildren,
+  publicRouteRoute: publicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
@@ -224,7 +356,6 @@ export const routeTree = rootRouteImport
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthServerRoute: ApiAuthServerRoute,
   ApiTimersServerRoute: ApiTimersServerRoute,
-  ApiTodosServerRoute: ApiTodosServerRoute,
   ApiUsersServerRoute: ApiUsersServerRoute,
   ApiTrpcSplatServerRoute: ApiTrpcSplatServerRoute,
 }

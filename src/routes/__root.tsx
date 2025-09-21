@@ -2,13 +2,31 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
+
+import { Toaster } from '@/components/ui/sonner';
+import { authQueryOptions, type AuthQueryResult } from '@/lib/auth/queries';
+import type { QueryClient } from '@tanstack/react-query';
 import appCss from '../styles.css?url';
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+  user: AuthQueryResult;
+}>()({
+  beforeLoad: ({ context }) => {
+    // we're using react-query for client-side caching to reduce client-to-server calls, see /src/router.tsx
+    // better-auth's cookieCache is also enabled server-side to reduce server-to-db calls, see /src/lib/auth/auth.ts
+    context.queryClient.prefetchQuery(authQueryOptions());
+
+    // typically we don't need the user immediately in landing pages,
+    // so we're only prefetching here and not awaiting.
+    // for protected routes with loader data, see /(authenticated)/route.tsx
+  },
   head: () => ({
     meta: [
       {
@@ -30,22 +48,38 @@ export const Route = createRootRoute({
     ],
   }),
 
-  component: () => (
+  component: RootComponent,
+});
+
+function RootComponent() {
+  return (
     <RootDocument>
       <Outlet />
-      <TanStackRouterDevtools />
     </RootDocument>
-  ),
-});
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
         {children}
+        <Toaster />
+        <TanStackDevtools
+          plugins={[
+            {
+              name: 'TanStack Query',
+              render: <ReactQueryDevtoolsPanel />,
+            },
+            {
+              name: 'TanStack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
         <Scripts />
       </body>
     </html>
