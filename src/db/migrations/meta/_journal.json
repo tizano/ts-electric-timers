@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758170080095,
-      "tag": "0000_large_starhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1758380874809,
-      "tag": "0001_parallel_ma_gnuci",
+      "when": 1758416890326,
+      "tag": "0000_pale_gauntlet",
       "breakpoints": true
     }
   ]

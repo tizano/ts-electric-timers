@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { account, session, user } from './auth';
-import { timer, timerAdjustment, timerExecution } from './timer';
+import { timer, timerAdjustment, timerAsset, timerExecution } from './timer';
 import { weddingEvent, weddingParticipant } from './wedding-event';
 
 // Relations Drizzle
@@ -12,9 +12,6 @@ export const userRelations = relations(user, ({ many }) => ({
   modifiedTimers: many(timer, { relationName: 'modifiedTimers' }),
   startedExecutions: many(timerExecution, {
     relationName: 'startedExecutions',
-  }),
-  stoppedExecutions: many(timerExecution, {
-    relationName: 'stoppedExecutions',
   }),
   timerAdjustments: many(timerAdjustment),
   weddingParticipations: many(weddingParticipant),
@@ -63,6 +60,13 @@ export const timerRelations = relations(timer, ({ one, many }) => ({
   }),
   executions: many(timerExecution),
   adjustments: many(timerAdjustment),
+  assets: many(timerAsset),
+}));
+export const timerAssetRelations = relations(timerAsset, ({ one }) => ({
+  timer: one(timer, {
+    fields: [timerAsset.timerId],
+    references: [timer.id],
+  }),
 }));
 
 export const timerExecutionRelations = relations(timerExecution, ({ one }) => ({
@@ -74,11 +78,6 @@ export const timerExecutionRelations = relations(timerExecution, ({ one }) => ({
     fields: [timerExecution.startedById],
     references: [user.id],
     relationName: 'startedExecutions',
-  }),
-  stoppedBy: one(user, {
-    fields: [timerExecution.stoppedById],
-    references: [user.id],
-    relationName: 'stoppedExecutions',
   }),
 }));
 
