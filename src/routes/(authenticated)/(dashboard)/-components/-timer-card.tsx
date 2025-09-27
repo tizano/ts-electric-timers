@@ -11,7 +11,13 @@ import type { Timer } from '@/db/schema/timer';
 import { cn } from '@/lib/utils';
 import { useNavigate } from '@tanstack/react-router';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(duration);
 
 export const TimerCard = ({
   timer,
@@ -21,18 +27,20 @@ export const TimerCard = ({
   className?: string;
 }) => {
   const navigate = useNavigate();
-  dayjs.extend(utc);
-  console.log('Current time (UTC): ', dayjs.utc().format());
-  console.log(
-    'Event time (UTC) without dayjs: ',
-    new Date(`${timer.scheduledStartTime}`).toUTCString()
-  );
-  console.log(
-    'Event time (UTC): ',
-    timer.scheduledStartTime?.toISOString(),
-    dayjs.utc(timer.scheduledStartTime).isUTC()
-  );
-  console.log('**********************');
+
+  // console.log('Current time (UTC): ', dayjs.utc().format());
+  // console.log(
+  //   'Event time (UTC) without dayjs: ',
+  //   new Date(`${timer.scheduledStartTime}`).toUTCString()
+  // );
+  // console.log(
+  //   'Event time (UTC): ',
+  //   timer.scheduledStartTime?.toISOString(),
+  //   dayjs.utc(timer.scheduledStartTime).isUTC()
+  // );
+  // console.log('**********************');
+  // console.log('*********Autre test *************');
+  // console.log('\n⏰ Planning des timers:');
 
   const handleCardClick = () => {
     navigate({

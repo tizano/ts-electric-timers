@@ -26,7 +26,7 @@ function removePrefix(filename: string, prefix: string): string {
  * Renomme tous les fichiers d'un dossier
  */
 async function renameFilesInDirectory(directoryPath: string): Promise<void> {
-  const stringToRemove = 'Casa de Cha - AUDIO ';
+  const stringToRemove = 'Casa de Cha - ';
 
   try {
     // Vérifier si le dossier existe
