@@ -11,28 +11,14 @@ import z from 'zod';
 import { user } from './auth';
 import { weddingEvent } from './wedding-event';
 
-export const ADJUSTMENT_TYPES = ['ADD_TIME', 'REMOVE_TIME'] as const;
-
-export const EXECUTION_STATUSES = ['STARTED', 'COMPLETED'] as const;
-
-export const TIMER_STATUSES = [
-  'PENDING',
-  'RUNNING',
-  'TRIGGER_ASSETS',
-  'PLAYING_END_ASSETS',
-  'COMPLETED',
-] as const;
-
+export const TIMER_STATUSES = ['PENDING', 'RUNNING', 'COMPLETED'] as const;
 export const ASSET_TYPES = ['GALLERY', 'IMAGE', 'SOUND', 'VIDEO'] as const;
+export const TRIGGER_TYPES = ['AFTER_START', 'BEFORE_END', 'AT_END'] as const;
 
 // Enums
-export const adjustmentTypeEnum = pgEnum('adjustment_type', ADJUSTMENT_TYPES);
-export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPES);
-export const executionStatusEnum = pgEnum(
-  'execution_status',
-  EXECUTION_STATUSES
-);
 export const timerStatusEnum = pgEnum('timer_status', TIMER_STATUSES);
+export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPES);
+export const triggerTypeEnum = pgEnum('trigger_type', TRIGGER_TYPES);
 
 export const timer = pgTable('timer', {
   id: text('id').primaryKey(),
@@ -41,14 +27,12 @@ export const timer = pgTable('timer', {
     .references(() => weddingEvent.id, { onDelete: 'cascade' }),
 
   name: text('name').notNull(),
-  scheduledStartTime: timestamp('scheduled_start_time'),
-  durationMinutes: integer('duration_minutes'),
-  // Décalage du trigger (ex: -5 = 5 minutes avant la fin, +2 = 2 minutes après le début)
-  triggerOffsetMinutes: integer('trigger_offset_minutes'),
+  scheduledStartTime: timestamp('scheduled_start_time'), // Obligatoire pour punctual
+  actualStartTime: timestamp('actual_start_time'), // Démarrage réel
+  durationMinutes: integer('duration_minutes').default(0), // 0 ou null = punctual (pas de countdown)
 
-  status: timerStatusEnum('status').notNull().default('PENDING'),
-  isManual: boolean('is_manual').notNull().default(false),
-  isPunctual: boolean('is_punctual').notNull().default(false),
+  status: timerStatusEnum('status').default('PENDING').notNull(),
+  isManual: boolean('is_manual').default(false).notNull(), // Gardé, pour trigger manuel indépendamment
 
   orderIndex: integer('order_index').notNull().default(0),
 
@@ -60,45 +44,20 @@ export const timer = pgTable('timer', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const timerExecution = pgTable('timer_execution', {
-  id: text('id').primaryKey(),
-  timerId: text('timer_id')
-    .notNull()
-    .references(() => timer.id, { onDelete: 'cascade' }),
-  actualStartTime: timestamp('actual_start_time').notNull(),
-  actualEndTime: timestamp('actual_end_time'),
-  actualDurationMinutes: integer('actual_duration_minutes'),
-  status: executionStatusEnum('status').notNull(),
-  startedById: text('started_by_id')
-    .notNull()
-    .references(() => user.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const timerAdjustment = pgTable('timer_adjustment', {
-  id: text('id').primaryKey(),
-  timerId: text('timer_id')
-    .notNull()
-    .references(() => timer.id, { onDelete: 'cascade' }),
-  adjustmentType: adjustmentTypeEnum('adjustment_type').notNull(),
-  minutesAdded: integer('minutes_added').notNull(), // Peut être négatif
-  cascadeToFollowing: boolean('cascade_to_following').notNull().default(false),
-  reason: text('reason'),
-  createdById: text('created_by_id')
-    .notNull()
-    .references(() => user.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const timerAsset = pgTable('timer_asset', {
+export const timerAction = pgTable('timer_action', {
   id: text('id').primaryKey(),
   timerId: text('timer_id')
     .notNull()
     .references(() => timer.id, { onDelete: 'cascade' }),
 
   type: assetTypeEnum('type').notNull(), // SOUND, VIDEO, IMAGE, TEXT, GALLERY
-  url: text('url'), // pour sons/vidéos/images
+  triggerType: triggerTypeEnum('trigger_type').default('AT_END').notNull(), // Ajout: BEFORE_END (use offset), AT_END, etc.
+  triggerOffsetMinutes: integer('trigger_offset_minutes'), // Seulement si duration > 0
 
+  executedAt: timestamp('executed_at'),
+
+  title: text('title'),
+  url: text('url'), // pour sons/vidéos/images
   // Multilingue pour les textes
   contentFr: text('content_fr'),
   contentEn: text('content_en'),
@@ -121,26 +80,10 @@ export type Timer = z.infer<typeof selectTimerSchema>;
 export type NewTimer = z.infer<typeof createTimerSchema>;
 export type UpdateTimer = z.infer<typeof updateTimerSchema>;
 
-export const selectTimerAdjustmentSchema = createSelectSchema(timerAdjustment);
-export const createTimerAdjustmentSchema = createInsertSchema(timerAdjustment);
-export const updateTimerAdjustmentSchema = createUpdateSchema(timerAdjustment);
+export const selectTimerActionSchema = createSelectSchema(timerAction);
+export const createTimerActionSchema = createInsertSchema(timerAction);
+export const updateTimerActionSchema = createUpdateSchema(timerAction);
 
-export type TimerAdjustment = z.infer<typeof selectTimerAdjustmentSchema>;
-export type NewTimerAdjustment = z.infer<typeof createTimerAdjustmentSchema>;
-export type UpdateTimerAdjustment = z.infer<typeof updateTimerAdjustmentSchema>;
-
-export const selectTimerExecutionSchema = createSelectSchema(timerExecution);
-export const createTimerExecutionSchema = createInsertSchema(timerExecution);
-export const updateTimerExecutionSchema = createUpdateSchema(timerExecution);
-
-export type TimerExecution = z.infer<typeof selectTimerExecutionSchema>;
-export type NewTimerExecution = z.infer<typeof createTimerExecutionSchema>;
-export type UpdateTimerExecution = z.infer<typeof updateTimerExecutionSchema>;
-
-export const selectTimerAssetSchema = createSelectSchema(timerAsset);
-export const createTimerAssetSchema = createInsertSchema(timerAsset);
-export const updateTimerAssetSchema = createUpdateSchema(timerAsset);
-
-export type TimerAsset = z.infer<typeof selectTimerAssetSchema>;
-export type NewTimerAsset = z.infer<typeof createTimerAssetSchema>;
-export type UpdateTimerAsset = z.infer<typeof updateTimerAssetSchema>;
+export type TimerAction = z.infer<typeof selectTimerActionSchema>;
+export type NewTimerAction = z.infer<typeof createTimerActionSchema>;
+export type UpdateTimerAction = z.infer<typeof updateTimerActionSchema>;

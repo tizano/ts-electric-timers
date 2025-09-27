@@ -1,7 +1,6 @@
-CREATE TYPE "public"."adjustment_type" AS ENUM('ADD_TIME', 'REMOVE_TIME');--> statement-breakpoint
 CREATE TYPE "public"."asset_type" AS ENUM('GALLERY', 'IMAGE', 'SOUND', 'VIDEO');--> statement-breakpoint
-CREATE TYPE "public"."execution_status" AS ENUM('STARTED', 'COMPLETED');--> statement-breakpoint
-CREATE TYPE "public"."timer_status" AS ENUM('PENDING', 'RUNNING', 'TRIGGER_ASSETS', 'PLAYING_END_ASSETS', 'COMPLETED');--> statement-breakpoint
+CREATE TYPE "public"."timer_status" AS ENUM('PENDING', 'RUNNING', 'COMPLETED');--> statement-breakpoint
+CREATE TYPE "public"."trigger_type" AS ENUM('AFTER_START', 'BEFORE_END', 'AT_END');--> statement-breakpoint
 CREATE TYPE "public"."participant_role" AS ENUM('OWNER', 'COORDINATOR', 'PARTICIPANT', 'VIEW_ONLY');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -56,11 +55,10 @@ CREATE TABLE "timer" (
 	"wedding_event_id" text NOT NULL,
 	"name" text NOT NULL,
 	"scheduled_start_time" timestamp,
-	"duration_minutes" integer,
-	"trigger_offset_minutes" integer,
+	"actual_start_time" timestamp,
+	"duration_minutes" integer DEFAULT 0,
 	"status" timer_status DEFAULT 'PENDING' NOT NULL,
 	"is_manual" boolean DEFAULT false NOT NULL,
-	"is_punctual" boolean DEFAULT false NOT NULL,
 	"order_index" integer DEFAULT 0 NOT NULL,
 	"created_by_id" text NOT NULL,
 	"last_modified_by_id" text,
@@ -68,21 +66,14 @@ CREATE TABLE "timer" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "timer_adjustment" (
-	"id" text PRIMARY KEY NOT NULL,
-	"timer_id" text NOT NULL,
-	"adjustment_type" "adjustment_type" NOT NULL,
-	"minutes_added" integer NOT NULL,
-	"cascade_to_following" boolean DEFAULT false NOT NULL,
-	"reason" text,
-	"created_by_id" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "timer_asset" (
+CREATE TABLE "timer_action" (
 	"id" text PRIMARY KEY NOT NULL,
 	"timer_id" text NOT NULL,
 	"type" "asset_type" NOT NULL,
+	"trigger_type" "trigger_type" DEFAULT 'AT_END' NOT NULL,
+	"trigger_offset_minutes" integer,
+	"executed_at" timestamp,
+	"title" text,
 	"url" text,
 	"content_fr" text,
 	"content_en" text,
@@ -92,23 +83,14 @@ CREATE TABLE "timer_asset" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "timer_execution" (
-	"id" text PRIMARY KEY NOT NULL,
-	"timer_id" text NOT NULL,
-	"actual_start_time" timestamp NOT NULL,
-	"actual_end_time" timestamp,
-	"actual_duration_minutes" integer,
-	"status" "execution_status" NOT NULL,
-	"started_by_id" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "wedding_event" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"event_date" timestamp NOT NULL,
 	"location" text,
+	"is_demo" boolean DEFAULT false,
+	"current_timer_id" text,
 	"owner_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
@@ -127,11 +109,7 @@ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "timer" ADD CONSTRAINT "timer_wedding_event_id_wedding_event_id_fk" FOREIGN KEY ("wedding_event_id") REFERENCES "public"."wedding_event"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "timer" ADD CONSTRAINT "timer_created_by_id_user_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "timer" ADD CONSTRAINT "timer_last_modified_by_id_user_id_fk" FOREIGN KEY ("last_modified_by_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timer_adjustment" ADD CONSTRAINT "timer_adjustment_timer_id_timer_id_fk" FOREIGN KEY ("timer_id") REFERENCES "public"."timer"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timer_adjustment" ADD CONSTRAINT "timer_adjustment_created_by_id_user_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timer_asset" ADD CONSTRAINT "timer_asset_timer_id_timer_id_fk" FOREIGN KEY ("timer_id") REFERENCES "public"."timer"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timer_execution" ADD CONSTRAINT "timer_execution_timer_id_timer_id_fk" FOREIGN KEY ("timer_id") REFERENCES "public"."timer"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "timer_execution" ADD CONSTRAINT "timer_execution_started_by_id_user_id_fk" FOREIGN KEY ("started_by_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "timer_action" ADD CONSTRAINT "timer_action_timer_id_timer_id_fk" FOREIGN KEY ("timer_id") REFERENCES "public"."timer"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wedding_event" ADD CONSTRAINT "wedding_event_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wedding_participant" ADD CONSTRAINT "wedding_participant_wedding_event_id_wedding_event_id_fk" FOREIGN KEY ("wedding_event_id") REFERENCES "public"."wedding_event"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wedding_participant" ADD CONSTRAINT "wedding_participant_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;

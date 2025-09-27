@@ -1,4 +1,6 @@
-import { pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { createSchemaFactory } from 'drizzle-zod';
+import z from 'zod';
 import { user } from './auth';
 
 export const PARTICIPANT_ROLES = [
@@ -20,6 +22,8 @@ export const weddingEvent = pgTable('wedding_event', {
   description: text('description'),
   eventDate: timestamp('event_date').notNull(),
   location: text('location'),
+  isDemo: boolean('is_demo').default(false), // Pour mode démo/reset
+  currentTimerId: text('current_timer_id'),
   ownerId: text('owner_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -38,3 +42,14 @@ export const weddingParticipant = pgTable('wedding_participant', {
   role: participantRoleEnum('role').notNull(),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 });
+
+const { createInsertSchema, createSelectSchema, createUpdateSchema } =
+  createSchemaFactory({ zodInstance: z });
+
+export const selectWeddingEventSchema = createSelectSchema(weddingEvent);
+export const createWeddingEventSchema = createInsertSchema(weddingEvent);
+export const updateWeddingEventSchema = createUpdateSchema(weddingEvent);
+
+export type WeddingEvent = z.infer<typeof selectWeddingEventSchema>;
+export type NewWeddingEvent = z.infer<typeof createWeddingEventSchema>;
+export type UpdateWeddingEvent = z.infer<typeof updateWeddingEventSchema>;

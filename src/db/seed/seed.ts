@@ -6,9 +6,9 @@ import { db } from '../index';
 import { user } from '../schema/auth';
 import {
   timer,
-  timerAsset,
+  timerAction,
   type NewTimer,
-  type NewTimerAsset,
+  type NewTimerAction,
 } from '../schema/timer';
 import { weddingEvent, weddingParticipant } from '../schema/wedding-event';
 
@@ -82,7 +82,7 @@ async function seedWeddingData() {
 
   // 2. Créer l'événement de mariage
   console.log("⏳ Création de l'événement de mariage...");
-  const weddingEvents = await db
+  const realWeddingEvent = await db
     .insert(weddingEvent)
     .values({
       id: 'wedding-event-1',
@@ -90,36 +90,53 @@ async function seedWeddingData() {
       description: 'Célébration du mariage de Tony et Neka',
       eventDate: new Date('2025-10-25'),
       location: 'Recife',
+      isDemo: false,
       ownerId: createdUsers[0]?.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
     .returning();
 
-  console.log('✅ Événement de mariage créé:', weddingEvents[0]?.name);
+  const demoWeddingEvent = await db
+    .insert(weddingEvent)
+    .values({
+      id: 'wedding-event-demo',
+      name: 'DEMO - Mariage Tony et Neka',
+      description: 'Célébration du mariage de Tony et Neka',
+      eventDate: new Date('2025-10-25'),
+      location: 'Recife',
+      isDemo: true,
+      ownerId: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  console.log('✅ Événement de mariage créé:', realWeddingEvent[0]?.name);
+  console.log('✅ Événement DEMO de mariage créé:', demoWeddingEvent[0]?.name);
 
   // 3. Créer les participants au mariage
   console.log('⏳ Ajout des participants...');
-  const participants = await db
+  const realParticipants = await db
     .insert(weddingParticipant)
     .values([
       {
         id: 'participant-1',
-        weddingEventId: weddingEvents[0]?.id,
+        weddingEventId: realWeddingEvent[0]?.id,
         userId: createdUsers[0]?.id,
         role: 'OWNER',
         joinedAt: new Date(),
       },
       {
         id: 'participant-2',
-        weddingEventId: weddingEvents[0]?.id,
+        weddingEventId: realWeddingEvent[0]?.id,
         userId: createdUsers[1]?.id,
         role: 'COORDINATOR',
         joinedAt: new Date(),
       },
       {
         id: 'participant-3',
-        weddingEventId: weddingEvents[0]?.id,
+        weddingEventId: realWeddingEvent[0]?.id,
         userId: createdUsers[2]?.id,
         role: 'COORDINATOR',
         joinedAt: new Date(),
@@ -127,7 +144,36 @@ async function seedWeddingData() {
     ])
     .returning();
 
-  console.log('✅ Participants ajoutés:', participants.length);
+  console.log('✅ Participants ajoutés:', realParticipants.length);
+
+  const demoParticipants = await db
+    .insert(weddingParticipant)
+    .values([
+      {
+        id: 'participant-demo-1',
+        weddingEventId: demoWeddingEvent[0]?.id,
+        userId: createdUsers[0]?.id,
+        role: 'OWNER',
+        joinedAt: new Date(),
+      },
+      {
+        id: 'participant-demo-2',
+        weddingEventId: demoWeddingEvent[0]?.id,
+        userId: createdUsers[1]?.id,
+        role: 'COORDINATOR',
+        joinedAt: new Date(),
+      },
+      {
+        id: 'participant-demo-3',
+        weddingEventId: demoWeddingEvent[0]?.id,
+        userId: createdUsers[2]?.id,
+        role: 'COORDINATOR',
+        joinedAt: new Date(),
+      },
+    ])
+    .returning();
+
+  console.log('✅ Participants DEMO ajoutés:', demoParticipants.length);
 
   // 4. Créer les 5 timers à partir de 17h, toutes les heures
   const timerData: NewTimer[] = [
@@ -138,7 +184,7 @@ async function seedWeddingData() {
       scheduledStartTime: new Date('2025-10-25T16:00:00.000Z'), // 16h à Recife (UTC-3)
       durationMinutes: 30,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -150,8 +196,7 @@ async function seedWeddingData() {
       name: 'Sound - Landing of the bride and groom',
       scheduledStartTime: new Date('2025-10-25T16:20:00.000Z'),
       status: 'PENDING' as const,
-      isPunctual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -164,7 +209,7 @@ async function seedWeddingData() {
       scheduledStartTime: new Date('2025-10-25T16:40:00.000Z'),
       durationMinutes: 10,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -176,9 +221,8 @@ async function seedWeddingData() {
       name: 'Sound - Speech of best men and maids of honour',
       scheduledStartTime: new Date('2025-10-25T17:05:00.000Z'),
       durationMinutes: 40,
-      triggerOffsetMinutes: -10,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -190,8 +234,7 @@ async function seedWeddingData() {
       name: 'Activity - Phone',
       scheduledStartTime: new Date('2025-10-25T17:30:00.000Z'),
       status: 'PENDING' as const,
-      isPunctual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -203,7 +246,7 @@ async function seedWeddingData() {
       name: 'Surprise',
       status: 'PENDING' as const,
       isManual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -214,10 +257,9 @@ async function seedWeddingData() {
       orderIndex: 7,
       name: 'Sound - Table-by-table',
       scheduledStartTime: new Date('2025-10-25T18:15:00.000Z'),
-      triggerOffsetMinutes: -10,
       durationMinutes: 45,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -229,8 +271,7 @@ async function seedWeddingData() {
       name: 'Activity - Digital game',
       status: 'PENDING' as const,
       scheduledStartTime: new Date('2025-10-25T18:30:00.000Z'),
-      isPunctual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -241,11 +282,9 @@ async function seedWeddingData() {
       orderIndex: 9,
       name: 'Sound - Bouquet toss',
       scheduledStartTime: new Date('2025-10-25T19:00:00.000Z'),
-      triggerOffsetMinutes: -10,
       durationMinutes: 50,
       status: 'PENDING' as const,
-      isPunctual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -257,7 +296,7 @@ async function seedWeddingData() {
       name: 'Sound - Starting Bouquet toss',
       status: 'PENDING' as const,
       isManual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -269,7 +308,7 @@ async function seedWeddingData() {
       name: 'Sound - Ending Bouquet - Cachaca toss',
       status: 'PENDING' as const,
       isManual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -281,7 +320,7 @@ async function seedWeddingData() {
       name: 'Sound - Starting Cachaca toss',
       status: 'PENDING' as const,
       isManual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -294,7 +333,7 @@ async function seedWeddingData() {
       scheduledStartTime: new Date('2025-10-25T20:15:00.000Z'),
       durationMinutes: 35,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -306,8 +345,7 @@ async function seedWeddingData() {
       name: 'Activity - Photomaton',
       scheduledStartTime: new Date('2025-10-25T20:30:00.000Z'),
       status: 'PENDING' as const,
-      isPunctual: true,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -320,7 +358,7 @@ async function seedWeddingData() {
       scheduledStartTime: new Date('2025-10-25T20:52:00.000Z'),
       durationMinutes: 8,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -333,7 +371,7 @@ async function seedWeddingData() {
       scheduledStartTime: new Date('2025-10-25T21:05:00.000Z'),
       durationMinutes: 55,
       status: 'PENDING' as const,
-      weddingEventId: weddingEvents[0]?.id,
+      weddingEventId: realWeddingEvent[0]?.id,
       createdById: createdUsers[0]?.id,
       lastModifiedById: createdUsers[0]?.id,
       createdAt: new Date(),
@@ -341,42 +379,246 @@ async function seedWeddingData() {
     },
   ];
 
-  // 5. Créer les assets des timers
-  const timerAssets: NewTimerAsset[] = [
-    // Timer 1: Video - Landing of the bride and groom
+  const timerDemoData: NewTimer[] = [
+    {
+      id: 'timer-demo-1',
+      orderIndex: 1,
+      name: 'Video + Sound - Landing of the bride and groom',
+      scheduledStartTime: new Date('2025-10-25T16:00:00.000Z'), // 16h à Recife (UTC-3)
+      durationMinutes: 30,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-2',
+      orderIndex: 2,
+      name: 'Sound - Landing of the bride and groom',
+      scheduledStartTime: new Date('2025-10-25T16:20:00.000Z'),
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-3',
+      orderIndex: 3,
+      name: 'Sound - Photos',
+      scheduledStartTime: new Date('2025-10-25T16:40:00.000Z'),
+      durationMinutes: 10,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-4',
+      orderIndex: 4,
+      name: 'Sound - Speech of best men and maids of honour',
+      scheduledStartTime: new Date('2025-10-25T17:05:00.000Z'),
+      durationMinutes: 40,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-5',
+      orderIndex: 5,
+      name: 'Activity - Phone',
+      scheduledStartTime: new Date('2025-10-25T17:30:00.000Z'),
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-6',
+      orderIndex: 6,
+      name: 'Surprise',
+      status: 'PENDING' as const,
+      isManual: true,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-7',
+      orderIndex: 7,
+      name: 'Sound - Table-by-table',
+      scheduledStartTime: new Date('2025-10-25T18:15:00.000Z'),
+      durationMinutes: 45,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-8',
+      orderIndex: 8,
+      name: 'Activity - Digital game',
+      status: 'PENDING' as const,
+      scheduledStartTime: new Date('2025-10-25T18:30:00.000Z'),
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-9',
+      orderIndex: 9,
+      name: 'Sound - Bouquet toss',
+      scheduledStartTime: new Date('2025-10-25T19:00:00.000Z'),
+      durationMinutes: 50,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-10',
+      orderIndex: 10,
+      name: 'Sound - Starting Bouquet toss',
+      status: 'PENDING' as const,
+      isManual: true,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-11',
+      orderIndex: 11,
+      name: 'Sound - Ending Bouquet - Cachaca toss',
+      status: 'PENDING' as const,
+      isManual: true,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-12',
+      orderIndex: 12,
+      name: 'Sound - Starting Cachaca toss',
+      status: 'PENDING' as const,
+      isManual: true,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-13',
+      orderIndex: 13,
+      name: 'Sound - French Shot',
+      scheduledStartTime: new Date('2025-10-25T20:15:00.000Z'),
+      durationMinutes: 35,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-14',
+      orderIndex: 14,
+      name: 'Activity - Photomaton',
+      scheduledStartTime: new Date('2025-10-25T20:30:00.000Z'),
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-15',
+      orderIndex: 15,
+      name: 'Carnival',
+      scheduledStartTime: new Date('2025-10-25T20:52:00.000Z'),
+      durationMinutes: 8,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'timer-demo-16',
+      orderIndex: 16,
+      name: 'Wedding cake',
+      scheduledStartTime: new Date('2025-10-25T21:05:00.000Z'),
+      durationMinutes: 55,
+      status: 'PENDING' as const,
+      weddingEventId: demoWeddingEvent[0]?.id,
+      createdById: createdUsers[0]?.id,
+      lastModifiedById: createdUsers[0]?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
+
+  // 5. Créer les actions des timers
+  const timerActions: NewTimerAction[] = [
+    // Timer 1 action: Video - Entrances of the bride and groom
     {
       id: 'asset-timer-1-video-1',
       timerId: 'timer-1',
       type: 'VIDEO',
-      url: '/assets/videos/1-atterissage.mp4',
+      url: '/assets/videos/1-video-demo.mp4',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Atterrissage des mariés',
       contentEn: 'Landing of the bride and groom',
       contentBr: 'Desembarque dos noivos',
     },
+    // Timer 1 action: Sound at the end - Entrances of the bride and groom
     {
       id: 'asset-timer-1-sound-1',
       timerId: 'timer-1',
       type: 'SOUND',
-      url: '/assets/sounds/1-entree-des-maries.mp3',
+      url: '/assets/sounds/audio-3-entree-des-maries.mp3',
       orderIndex: 1,
       createdAt: new Date(),
       contentFr: 'Atterrissage des mariés',
       contentEn: 'Landing of the bride and groom',
       contentBr: 'Desembarque dos noivos',
+      displayDurationSec: 60 * 2, // 2 min
     },
 
-    // Timer 2: Sound - Landing of the bride and groom
+    // Timer 2 action: Sound - Landing of the bride and groom
     {
       id: 'asset-timer-2-sound',
       timerId: 'timer-2',
       type: 'SOUND',
-      url: '/assets/sounds/1-atterissage.mp3',
+      url: '/assets/sounds/audio-1-atterrissage-tony.mp3',
       contentFr: 'Atterrissage des mariés',
       contentEn: 'Landing of the bride and groom',
       contentBr: 'Desembarque dos noivos',
-      displayDurationSec: 60 * 10, // 10 min
       orderIndex: 0,
       createdAt: new Date(),
     },
@@ -386,7 +628,7 @@ async function seedWeddingData() {
       id: 'asset-timer-3-sound',
       timerId: 'timer-3',
       type: 'SOUND',
-      url: '/assets/sounds/2-photo-de-groupe.mp3',
+      url: '/assets/sounds/audio-4-photos-neka.mp3',
       contentFr: 'Photos',
       contentEn: 'Photos',
       contentBr: 'Photos',
@@ -399,38 +641,40 @@ async function seedWeddingData() {
       id: 'asset-timer-4-sound',
       timerId: 'timer-4',
       type: 'SOUND',
-      url: '/assets/sounds/3-discours-temoins.mp3',
+      url: '/assets/sounds/audio-5-discours-tony.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Discours des témoins',
       contentEn: 'Speech of best men and maids of honour',
       contentBr: 'Discurso das testemunhas',
-      displayDurationSec: 60 * 10, // 10 min
+      triggerType: 'BEFORE_END',
+      triggerOffsetMinutes: -10,
+      displayDurationSec: 60 * 2, // 2 min
     },
     // Timer 5: Activity - Phone
-    {
-      id: 'asset-timer-5-sound',
-      timerId: 'timer-5',
-      type: 'SOUND',
-      url: '/assets/sounds/3-telephone.mp3',
-      orderIndex: 0,
-      createdAt: new Date(),
-    },
     {
       id: 'asset-timer-5-image',
       timerId: 'timer-5',
       type: 'IMAGE',
-      orderIndex: 1,
-      displayDurationSec: 60, // 1 min
+      orderIndex: 0,
       url: '/assets/images/telephone.png',
       createdAt: new Date(),
     },
+    {
+      id: 'asset-timer-5-sound',
+      timerId: 'timer-5',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-6-telephone.mp3',
+      orderIndex: 1,
+      createdAt: new Date(),
+    },
+
     // Timer 6: Surprise
     {
       id: 'asset-timer-6-sound',
       timerId: 'timer-6',
       type: 'SOUND',
-      url: '/assets/sounds/4-surprise.mp3',
+      url: '/assets/sounds/audio-7-ouverture-neka.mp3',
       orderIndex: 0,
       createdAt: new Date(),
     },
@@ -439,50 +683,55 @@ async function seedWeddingData() {
       id: 'asset-timer-7-sound',
       timerId: 'timer-7',
       type: 'SOUND',
-      url: '/assets/sounds/6-table.mp3',
+      url: '/assets/sounds/audio-9-table.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Activité table par table',
       contentEn: 'Table-by-table activity',
       contentBr: 'Atividade mesa por mesa',
-      displayDurationSec: 60 * 10, // 10 min
+      triggerType: 'BEFORE_END',
+      triggerOffsetMinutes: -10,
+      displayDurationSec: 60 * 2, // 2 min
     },
     // Timer 8: Activity - Digital game
-    {
-      id: 'asset-timer-8-sound',
-      timerId: 'timer-8',
-      type: 'SOUND',
-      url: '/assets/sounds/5-cosmic-love.mp3',
-      orderIndex: 0,
-      createdAt: new Date(),
-    },
     {
       id: 'asset-timer-8-image',
       timerId: 'timer-8',
       type: 'IMAGE',
-      url: '/assets/images/cosmic-love.png',
+      url: '/assets/images/jeu.png',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    {
+      id: 'asset-timer-8-sound',
+      timerId: 'timer-8',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-8-cosmic-love.mp3',
       orderIndex: 1,
       createdAt: new Date(),
     },
+
     // Timer 9: Sound - Bouquet toss
     {
       id: 'asset-timer-9-sound',
       timerId: 'timer-9',
       type: 'SOUND',
-      url: '/assets/sounds/7-bouquet.mp3',
+      url: '/assets/sounds/audio-10-bouquet-tony.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Lancer de bouquet',
       contentEn: 'Bouquet toss',
       contentBr: 'Jogar o buquê',
-      displayDurationSec: 60 * 10, // 10 min
+      triggerOffsetMinutes: -10,
+      triggerType: 'BEFORE_END',
+      displayDurationSec: 60 * 2, // 2 min
     },
     // Timer 10: Sound - Starting Bouquet toss
     {
       id: 'asset-timer-10-sound',
       timerId: 'timer-10',
       type: 'SOUND',
-      url: '/assets/sounds/countdown.mp3',
+      url: '/assets/sounds/audio-11-countdown.mp3',
       orderIndex: 0,
       createdAt: new Date(),
     },
@@ -491,7 +740,7 @@ async function seedWeddingData() {
       id: 'asset-timer-11-sound',
       timerId: 'timer-11',
       type: 'SOUND',
-      url: '/assets/sounds/8-cachaca.mp3',
+      url: '/assets/sounds/audio-12-cachaca-neka.mp3',
       orderIndex: 0,
       createdAt: new Date(),
     },
@@ -500,7 +749,7 @@ async function seedWeddingData() {
       id: 'asset-timer-12-sound',
       timerId: 'timer-12',
       type: 'SOUND',
-      url: '/assets/sounds/countdown.mp3',
+      url: '/assets/sounds/audio-13-countdown.mp3',
       orderIndex: 0,
       createdAt: new Date(),
     },
@@ -509,7 +758,7 @@ async function seedWeddingData() {
       id: 'asset-timer-13-sound',
       timerId: 'timer-13',
       type: 'SOUND',
-      url: '/assets/sounds/10-shot.mp3',
+      url: '/assets/sounds/audio-15-trou-normand-neka.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Trou normand',
@@ -519,27 +768,28 @@ async function seedWeddingData() {
     },
     // Timer 14: Activity - Photomaton
     {
-      id: 'asset-timer-14-sound',
-      timerId: 'timer-14',
-      type: 'SOUND',
-      url: '/assets/sounds/9-photomaton.mp3',
-      orderIndex: 0,
-      createdAt: new Date(),
-    },
-    {
       id: 'asset-timer-14-image',
       timerId: 'timer-14',
       type: 'IMAGE',
       url: '/assets/images/photomaton.png',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    {
+      id: 'asset-timer-14-sound',
+      timerId: 'timer-14',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-14-photomaton.mp3',
       orderIndex: 1,
       createdAt: new Date(),
     },
+
     // Timer 15: Carnival
     {
       id: 'asset-timer-15-sound',
       timerId: 'timer-15',
       type: 'SOUND',
-      url: '/assets/sounds/11-carnaval.mp3',
+      url: '/assets/sounds/audio-16-carnaval.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Carnaval',
@@ -547,38 +797,258 @@ async function seedWeddingData() {
       contentBr: 'Carnaval',
       displayDurationSec: 60 * 2, // 2 min
     },
-    {
-      id: 'asset-timer-15-video',
-      timerId: 'timer-15',
-      type: 'VIDEO',
-      url: '/assets/videos/carnaval.mp4',
-      orderIndex: 1,
-      createdAt: new Date(),
-      contentFr: 'Carnaval',
-      contentEn: 'Carnival',
-      contentBr: 'Carnaval',
-      displayDurationSec: 60 * 5, // 5 min
-    },
     // Timer 16: Wedding cake
     {
       id: 'asset-timer-16-sound',
       timerId: 'timer-16',
       type: 'SOUND',
-      url: '/assets/sounds/12-dessert.mp3',
+      url: '/assets/sounds/audio-17-gateau-tony.mp3',
       orderIndex: 0,
       createdAt: new Date(),
       contentFr: 'Gâteau de mariage',
       contentEn: 'Wedding cake',
       contentBr: 'Bolo do casamento',
-      displayDurationSec: 60 * 5, // 5 min
+      displayDurationSec: 60 * 2, // 2 min
+    },
+  ];
+  const timerActionsDemo: NewTimerAction[] = [
+    // Timer 1 action: Video - Entrances of the bride and groom
+    {
+      id: 'asset-demo-timer-1-video-1',
+      timerId: 'timer-demo-1',
+      type: 'VIDEO',
+      url: '/assets/videos/1-video-demo.mp4',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Atterrissage des mariés',
+      contentEn: 'Landing of the bride and groom',
+      contentBr: 'Desembarque dos noivos',
+    },
+    // Timer 1 action: Sound at the end - Entrances of the bride and groom
+    {
+      id: 'asset-demo-timer-1-sound-1',
+      timerId: 'timer-demo-1',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-3-entree-des-maries.mp3',
+      orderIndex: 1,
+      createdAt: new Date(),
+      contentFr: 'Atterrissage des mariés',
+      contentEn: 'Landing of the bride and groom',
+      contentBr: 'Desembarque dos noivos',
+      displayDurationSec: 60 * 2, // 2 min
+    },
+
+    // Timer 2 action: Sound - Landing of the bride and groom
+    {
+      id: 'asset-demo-timer-2-sound',
+      timerId: 'timer-demo-2',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-1-atterrissage-tony.mp3',
+      contentFr: 'Atterrissage des mariés',
+      contentEn: 'Landing of the bride and groom',
+      contentBr: 'Desembarque dos noivos',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+
+    // Timer 3: Sound - Photos
+    {
+      id: 'asset-demo-timer-3-sound',
+      timerId: 'timer-demo-3',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-4-photos-neka.mp3',
+      contentFr: 'Photos',
+      contentEn: 'Photos',
+      contentBr: 'Photos',
+      orderIndex: 0,
+      createdAt: new Date(),
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 4: Sound - Speech of best men and maids of honour
+    {
+      id: 'asset-demo-timer-4-sound',
+      timerId: 'timer-demo-4',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-5-discours-tony.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Discours des témoins',
+      contentEn: 'Speech of best men and maids of honour',
+      contentBr: 'Discurso das testemunhas',
+      triggerType: 'BEFORE_END',
+      triggerOffsetMinutes: -10,
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 5: Activity - Phone
+    {
+      id: 'asset-demo-timer-5-image',
+      timerId: 'timer-demo-5',
+      type: 'IMAGE',
+      orderIndex: 0,
+      url: '/assets/images/telephone.png',
+      createdAt: new Date(),
+    },
+    {
+      id: 'asset-demo-timer-5-sound',
+      timerId: 'timer-demo-5',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-6-telephone.mp3',
+      orderIndex: 1,
+      createdAt: new Date(),
+    },
+
+    // Timer 6: Surprise
+    {
+      id: 'asset-demo-timer-6-sound',
+      timerId: 'timer-demo-6',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-7-ouverture-neka.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    // Timer 7: Sound - Table-by-table
+    {
+      id: 'asset-demo-timer-7-sound',
+      timerId: 'timer-demo-7',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-9-table.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Activité table par table',
+      contentEn: 'Table-by-table activity',
+      contentBr: 'Atividade mesa por mesa',
+      triggerType: 'BEFORE_END',
+      triggerOffsetMinutes: -10,
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 8: Activity - Digital game
+    {
+      id: 'asset-demo-timer-8-image',
+      timerId: 'timer-demo-8',
+      type: 'IMAGE',
+      url: '/assets/images/jeu.png',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    {
+      id: 'asset-demo-timer-8-sound',
+      timerId: 'timer-demo-8',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-8-cosmic-love.mp3',
+      orderIndex: 1,
+      createdAt: new Date(),
+    },
+
+    // Timer 9: Sound - Bouquet toss
+    {
+      id: 'asset-demo-timer-9-sound',
+      timerId: 'timer-demo-9',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-10-bouquet-tony.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Lancer de bouquet',
+      contentEn: 'Bouquet toss',
+      contentBr: 'Jogar o buquê',
+      triggerOffsetMinutes: -10,
+      triggerType: 'BEFORE_END',
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 10: Sound - Starting Bouquet toss
+    {
+      id: 'asset-demo-timer-10-sound',
+      timerId: 'timer-demo-10',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-11-countdown.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    // Timer 11: Sound - Ending Bouquet toss
+    {
+      id: 'asset-demo-timer-11-sound',
+      timerId: 'timer-demo-11',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-12-cachaca-neka.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    // Timer 12: Sound - Starting Cachaca toss
+    {
+      id: 'asset-demo-timer-12-sound',
+      timerId: 'timer-demo-12',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-13-countdown.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    // Timer 13: Sound - French Shot
+    {
+      id: 'asset-demo-timer-13-sound',
+      timerId: 'timer-demo-13',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-15-trou-normand-neka.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Trou normand',
+      contentEn: 'French shot of Normandy',
+      contentBr: 'Shot francês da Normandia',
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 14: Activity - Photomaton
+    {
+      id: 'asset-demo-timer-14-image',
+      timerId: 'timer-demo-14',
+      type: 'IMAGE',
+      url: '/assets/images/photomaton.png',
+      orderIndex: 0,
+      createdAt: new Date(),
+    },
+    {
+      id: 'asset-demo-timer-14-sound',
+      timerId: 'timer-demo-14',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-14-photomaton.mp3',
+      orderIndex: 1,
+      createdAt: new Date(),
+    },
+
+    // Timer 15: Carnival
+    {
+      id: 'asset-demo-timer-15-sound',
+      timerId: 'timer-demo-15',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-16-carnaval.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Carnaval',
+      contentEn: 'Carnival',
+      contentBr: 'Carnaval',
+      displayDurationSec: 60 * 2, // 2 min
+    },
+    // Timer 16: Wedding cake
+    {
+      id: 'asset-demo-timer-16-sound',
+      timerId: 'timer-demo-16',
+      type: 'SOUND',
+      url: '/assets/sounds/audio-17-gateau-tony.mp3',
+      orderIndex: 0,
+      createdAt: new Date(),
+      contentFr: 'Gâteau de mariage',
+      contentEn: 'Wedding cake',
+      contentBr: 'Bolo do casamento',
+      displayDurationSec: 60 * 2, // 2 min
     },
   ];
 
   console.log('⏳ Création des timers...');
   const timers = await db.insert(timer).values(timerData).returning();
+  console.log('⏳ Création des timers demo...');
+  await db.insert(timer).values(timerDemoData);
 
   console.log('⏳ Création des assets des timers...');
-  await db.insert(timerAsset).values(timerAssets);
+  await db.insert(timerAction).values(timerActions);
+  console.log('⏳ Création des assets des timers demo...');
+  await db.insert(timerAction).values(timerActionsDemo);
 
   console.log('✅ Timers créés:', timers.length);
 
@@ -586,8 +1056,8 @@ async function seedWeddingData() {
 
   // Afficher un résumé
   console.log('\n📋 Résumé du seeding:');
-  console.log(`- Mariage: ${weddingEvents[0]?.name}`);
-  console.log(`- Date: ${weddingEvents[0]?.eventDate}`);
+  console.log(`- Mariage: ${realWeddingEvent[0]?.name}`);
+  console.log(`- Date: ${realWeddingEvent[0]?.eventDate}`);
   console.log('- Propriétaire: Tony et Neka');
   console.log(`- Nombre de timers: ${timers.length}`);
   console.log('\n⏰ Planning des timers:');

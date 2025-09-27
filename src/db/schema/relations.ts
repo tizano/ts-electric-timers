@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { account, session, user } from './auth';
-import { timer, timerAdjustment, timerAsset, timerExecution } from './timer';
+import { timer, timerAction } from './timer';
 import { weddingEvent, weddingParticipant } from './wedding-event';
 
 // Relations Drizzle
@@ -10,10 +10,6 @@ export const userRelations = relations(user, ({ many }) => ({
   ownedWeddingEvents: many(weddingEvent),
   createdTimers: many(timer, { relationName: 'createdTimers' }),
   modifiedTimers: many(timer, { relationName: 'modifiedTimers' }),
-  startedExecutions: many(timerExecution, {
-    relationName: 'startedExecutions',
-  }),
-  timerAdjustments: many(timerAdjustment),
   weddingParticipations: many(weddingParticipant),
 }));
 
@@ -58,42 +54,14 @@ export const timerRelations = relations(timer, ({ one, many }) => ({
     references: [user.id],
     relationName: 'modifiedTimers',
   }),
-  executions: many(timerExecution),
-  adjustments: many(timerAdjustment),
-  assets: many(timerAsset),
+  actions: many(timerAction),
 }));
-export const timerAssetRelations = relations(timerAsset, ({ one }) => ({
+export const timerActionRelations = relations(timerAction, ({ one }) => ({
   timer: one(timer, {
-    fields: [timerAsset.timerId],
+    fields: [timerAction.timerId],
     references: [timer.id],
   }),
 }));
-
-export const timerExecutionRelations = relations(timerExecution, ({ one }) => ({
-  timer: one(timer, {
-    fields: [timerExecution.timerId],
-    references: [timer.id],
-  }),
-  startedBy: one(user, {
-    fields: [timerExecution.startedById],
-    references: [user.id],
-    relationName: 'startedExecutions',
-  }),
-}));
-
-export const timerAdjustmentRelations = relations(
-  timerAdjustment,
-  ({ one }) => ({
-    timer: one(timer, {
-      fields: [timerAdjustment.timerId],
-      references: [timer.id],
-    }),
-    createdBy: one(user, {
-      fields: [timerAdjustment.createdById],
-      references: [user.id],
-    }),
-  })
-);
 
 export const weddingParticipantRelations = relations(
   weddingParticipant,
