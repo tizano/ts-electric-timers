@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import * as schema from '@/db/schema/auth';
+import { env } from '@/env/server';
 import { serverOnly } from '@tanstack/react-start';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
@@ -23,7 +24,7 @@ const getAuthConfig = serverOnly(() =>
       enabled: true,
     },
     trustedOrigins: [
-      process.env.CORS_ORIGIN! || 'http://localhost:5173', // fallback for direct Vite access
+      env.VITE_BASE_URL! || 'http://localhost:5173', // fallback for direct Vite access
     ],
     plugins: [reactStartCookies()],
   })

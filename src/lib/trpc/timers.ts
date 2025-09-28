@@ -1,11 +1,21 @@
 import { db } from '@/db';
 import { timer } from '@/db/schema/timer';
 import { weddingEvent } from '@/db/schema/wedding-event';
+import { env } from '@/env/server';
 import { authedProcedure, procedure, router } from '@/lib/trpc';
 import { and, eq, gt } from 'drizzle-orm';
+import Pusher from 'pusher';
 import z from 'zod';
 
 // export const ee = new EventEmitter(); // Global EventEmitter pour notifications
+
+const pusher = new Pusher({
+  appId: env.PUSHER_APP_ID,
+  key: env.VITE_PUSHER_KEY,
+  secret: env.PUSHER_SECRET,
+  cluster: env.VITE_PUSHER_CLUSTER,
+  useTLS: true,
+});
 
 export const timersRouter = router({
   listByWeddingEventId: procedure
@@ -51,6 +61,9 @@ export const timersRouter = router({
           lastModifiedById: ctx.session.user.id,
         })
         .where(eq(timer.id, input.id));
+      pusher.trigger('my-channel', 'my-event', {
+        message: 'hello world time added',
+      });
     }),
   completeTimer: authedProcedure
     .input(

@@ -19,17 +19,15 @@ export default function TimerList({
     }
     return (
       <div
-        className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
+        className="bg-yellow-100 border-l-4 border-amber-500 text-amber-700 p-4 mb-4 flex items-center justify-between"
         role="alert"
       >
         <p className="font-bold">Demo Mode Enabled</p>
-      </div>
-    );
-  };
-
-  const renderDemoButtons = () => {
-    if (isDemo) {
-      return (
+        <p>
+          <span className="font-normal">
+            Go to <strong>/demo</strong> on the main app
+          </span>
+        </p>
         <Button
           onClick={() =>
             navigate({
@@ -37,10 +35,17 @@ export default function TimerList({
               params: { weddingEventId: 'wedding-event-1' },
             })
           }
+          className="cursor-pointer"
         >
           Disable Demo Mode
         </Button>
-      );
+      </div>
+    );
+  };
+
+  const renderDemoButtons = () => {
+    if (isDemo) {
+      return null;
     }
     return (
       <Button
@@ -50,6 +55,8 @@ export default function TimerList({
             params: { weddingEventId: 'wedding-event-demo' },
           })
         }
+        variant={'destructive'}
+        className="cursor-pointer"
       >
         Enable Demo Mode
       </Button>
@@ -59,7 +66,7 @@ export default function TimerList({
   return (
     <>
       {renderBannerDemoMode()}
-      <div>{renderDemoButtons()}</div>
+      <div className="mb-4">{renderDemoButtons()}</div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {timersWithActions.map((timer) => (
           <TimerCard key={timer.id} timer={timer} actions={timer.actions} />

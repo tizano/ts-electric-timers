@@ -1,4 +1,5 @@
 import type { Timer, TimerAction } from '@/db/schema/timer';
+import { trpc } from '@/lib/trpc-client';
 import ActionList from './ActionList';
 import StatusBadge from './StatusBadge';
 
@@ -32,6 +33,17 @@ export default function TimerCard({ timer, actions }: TimerCardProps) {
               {new Date(timer.scheduledStartTime).toISOString()}
             </div>
           )}
+          <button
+            onClick={() =>
+              trpc.timers.addTimeToTimer.mutate({
+                id: timer.id,
+                additionalMinutes: 5,
+                currentTimerDuration: timer.durationMinutes!,
+              })
+            }
+          >
+            Click me to add time
+          </button>
         </div>
       </div>
       <ActionList actions={actions} />

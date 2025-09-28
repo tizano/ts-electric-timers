@@ -1,6 +1,6 @@
+import { env } from '@/env/server';
 import { auth } from '@/lib/auth/auth';
 import type { User } from 'better-auth';
-import { config } from 'dotenv';
 import { reset } from 'drizzle-seed';
 import { db } from '../index';
 import { user } from '../schema/auth';
@@ -12,12 +12,9 @@ import {
 } from '../schema/timer';
 import { weddingEvent, weddingParticipant } from '../schema/wedding-event';
 
-config();
-console.log(process.env.SEED_USER_PASSWORD);
-
 async function seedWeddingData() {
   console.log('🌱 Début du seeding...');
-  console.log('🔗 Connexion à la base de données...', process.env.DATABASE_URL);
+  console.log('🔗 Connexion à la base de données...', env.DATABASE_URL);
 
   // 1. Créer les utilisateurs
   const usersToCreate: User[] = [
