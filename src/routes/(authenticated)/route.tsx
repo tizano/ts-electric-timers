@@ -1,7 +1,7 @@
 import { authQueryOptions } from '@/lib/auth/queries';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { Header } from './(dashboard)/-components/-header';
+import { Header } from './dashboard/-components/Header';
 
 export const Route = createFileRoute(`/(authenticated)`)({
   component: DashboardLayout,

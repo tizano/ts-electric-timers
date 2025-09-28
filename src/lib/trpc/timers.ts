@@ -1,4 +1,5 @@
-import { timer, timerAction } from '@/db/schema/timer';
+import { db } from '@/db';
+import { timer } from '@/db/schema/timer';
 import { weddingEvent } from '@/db/schema/wedding-event';
 import { authedProcedure, procedure, router } from '@/lib/trpc';
 import { and, eq, gt } from 'drizzle-orm';
@@ -8,14 +9,30 @@ import z from 'zod';
 
 export const timersRouter = router({
   listByWeddingEventId: procedure
-    .input(z.object({ weddingEventId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const items = await ctx.db
-        .select()
-        .from(timer)
-        .innerJoin(timerAction, eq(timer.id, timerAction.timerId))
-        .where(eq(timer.weddingEventId, input.weddingEventId))
-        .orderBy(timer.orderIndex);
+    .input(
+      z.object({
+        weddingEventId: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      // .default('wedding-event-1')
+      // const items = await ctx.db
+      //   .select()
+      //   .from(timer)
+      //   .innerJoin(timerAction, eq(timer.id, timerAction.timerId))
+      //   .where(eq(timer.weddingEventId, input.weddingEventId))
+      //   .orderBy(timer.orderIndex);
+      // if (!input.weddingEventId) {
+      //   throw new Error('weddingEventId is required');
+      // }
+      const items = await db.query.timer.findMany({
+        where: (timer, { eq }) =>
+          eq(timer.weddingEventId, input.weddingEventId as string),
+        orderBy: (timer, { asc }) => [asc(timer.orderIndex)],
+        with: {
+          actions: true,
+        },
+      });
       return items;
     }),
   addTimeToTimer: authedProcedure

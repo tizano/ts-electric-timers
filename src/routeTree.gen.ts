@@ -17,9 +17,10 @@ import { Route as authPagesRouteRouteImport } from './routes/(auth-pages)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as publicTimersRouteImport } from './routes/(public)/timers'
 import { Route as authPagesLoginRouteImport } from './routes/(auth-pages)/login'
-import { Route as authenticateddashboardDashboardRouteImport } from './routes/(authenticated)/(dashboard)/dashboard'
-import { Route as authenticateddashboardTimersTimerIdRouteRouteImport } from './routes/(authenticated)/(dashboard)/timers/$timerId/route'
-import { Route as authenticateddashboardTimersTimerIdEditRouteImport } from './routes/(authenticated)/(dashboard)/timers/$timerId/edit'
+import { Route as authenticatedDashboardIndexRouteImport } from './routes/(authenticated)/dashboard/index'
+import { Route as authenticatedDashboardWeddingEventIdIndexRouteImport } from './routes/(authenticated)/dashboard/$weddingEventId/index'
+import { Route as authenticatedDashboardTimersTimerIdRouteRouteImport } from './routes/(authenticated)/dashboard/timers/$timerId/route'
+import { Route as authenticatedDashboardTimersTimerIdEditRouteImport } from './routes/(authenticated)/dashboard/timers/$timerId/edit'
 import { ServerRoute as ApiAuthServerRouteImport } from './routes/api/auth'
 import { ServerRoute as ApiTrpcSplatServerRouteImport } from './routes/api/trpc/$'
 
@@ -52,23 +53,29 @@ const authPagesLoginRoute = authPagesLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => authPagesRouteRoute,
 } as any)
-const authenticateddashboardDashboardRoute =
-  authenticateddashboardDashboardRouteImport.update({
-    id: '/(dashboard)/dashboard',
-    path: '/dashboard',
+const authenticatedDashboardIndexRoute =
+  authenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
     getParentRoute: () => authenticatedRouteRoute,
   } as any)
-const authenticateddashboardTimersTimerIdRouteRoute =
-  authenticateddashboardTimersTimerIdRouteRouteImport.update({
-    id: '/(dashboard)/timers/$timerId',
-    path: '/timers/$timerId',
+const authenticatedDashboardWeddingEventIdIndexRoute =
+  authenticatedDashboardWeddingEventIdIndexRouteImport.update({
+    id: '/dashboard/$weddingEventId/',
+    path: '/dashboard/$weddingEventId/',
     getParentRoute: () => authenticatedRouteRoute,
   } as any)
-const authenticateddashboardTimersTimerIdEditRoute =
-  authenticateddashboardTimersTimerIdEditRouteImport.update({
+const authenticatedDashboardTimersTimerIdRouteRoute =
+  authenticatedDashboardTimersTimerIdRouteRouteImport.update({
+    id: '/dashboard/timers/$timerId',
+    path: '/dashboard/timers/$timerId',
+    getParentRoute: () => authenticatedRouteRoute,
+  } as any)
+const authenticatedDashboardTimersTimerIdEditRoute =
+  authenticatedDashboardTimersTimerIdEditRouteImport.update({
     id: '/edit',
     path: '/edit',
-    getParentRoute: () => authenticateddashboardTimersTimerIdRouteRoute,
+    getParentRoute: () => authenticatedDashboardTimersTimerIdRouteRoute,
   } as any)
 const ApiAuthServerRoute = ApiAuthServerRouteImport.update({
   id: '/api/auth',
@@ -85,17 +92,19 @@ export interface FileRoutesByFullPath {
   '/': typeof publicRouteRouteWithChildren
   '/login': typeof authPagesLoginRoute
   '/timers': typeof publicTimersRoute
-  '/dashboard': typeof authenticateddashboardDashboardRoute
-  '/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
-  '/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
+  '/dashboard': typeof authenticatedDashboardIndexRoute
+  '/dashboard/timers/$timerId': typeof authenticatedDashboardTimersTimerIdRouteRouteWithChildren
+  '/dashboard/$weddingEventId': typeof authenticatedDashboardWeddingEventIdIndexRoute
+  '/dashboard/timers/$timerId/edit': typeof authenticatedDashboardTimersTimerIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof publicRouteRouteWithChildren
   '/login': typeof authPagesLoginRoute
   '/timers': typeof publicTimersRoute
-  '/dashboard': typeof authenticateddashboardDashboardRoute
-  '/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
-  '/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
+  '/dashboard': typeof authenticatedDashboardIndexRoute
+  '/dashboard/timers/$timerId': typeof authenticatedDashboardTimersTimerIdRouteRouteWithChildren
+  '/dashboard/$weddingEventId': typeof authenticatedDashboardWeddingEventIdIndexRoute
+  '/dashboard/timers/$timerId/edit': typeof authenticatedDashboardTimersTimerIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,9 +114,10 @@ export interface FileRoutesById {
   '/(public)': typeof publicRouteRouteWithChildren
   '/(auth-pages)/login': typeof authPagesLoginRoute
   '/(public)/timers': typeof publicTimersRoute
-  '/(authenticated)/(dashboard)/dashboard': typeof authenticateddashboardDashboardRoute
-  '/(authenticated)/(dashboard)/timers/$timerId': typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
-  '/(authenticated)/(dashboard)/timers/$timerId/edit': typeof authenticateddashboardTimersTimerIdEditRoute
+  '/(authenticated)/dashboard/': typeof authenticatedDashboardIndexRoute
+  '/(authenticated)/dashboard/timers/$timerId': typeof authenticatedDashboardTimersTimerIdRouteRouteWithChildren
+  '/(authenticated)/dashboard/$weddingEventId/': typeof authenticatedDashboardWeddingEventIdIndexRoute
+  '/(authenticated)/dashboard/timers/$timerId/edit': typeof authenticatedDashboardTimersTimerIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,16 +126,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/timers'
     | '/dashboard'
-    | '/timers/$timerId'
-    | '/timers/$timerId/edit'
+    | '/dashboard/timers/$timerId'
+    | '/dashboard/$weddingEventId'
+    | '/dashboard/timers/$timerId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/timers'
     | '/dashboard'
-    | '/timers/$timerId'
-    | '/timers/$timerId/edit'
+    | '/dashboard/timers/$timerId'
+    | '/dashboard/$weddingEventId'
+    | '/dashboard/timers/$timerId/edit'
   id:
     | '__root__'
     | '/'
@@ -134,9 +146,10 @@ export interface FileRouteTypes {
     | '/(public)'
     | '/(auth-pages)/login'
     | '/(public)/timers'
-    | '/(authenticated)/(dashboard)/dashboard'
-    | '/(authenticated)/(dashboard)/timers/$timerId'
-    | '/(authenticated)/(dashboard)/timers/$timerId/edit'
+    | '/(authenticated)/dashboard/'
+    | '/(authenticated)/dashboard/timers/$timerId'
+    | '/(authenticated)/dashboard/$weddingEventId/'
+    | '/(authenticated)/dashboard/timers/$timerId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -215,26 +228,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authPagesLoginRouteImport
       parentRoute: typeof authPagesRouteRoute
     }
-    '/(authenticated)/(dashboard)/dashboard': {
-      id: '/(authenticated)/(dashboard)/dashboard'
+    '/(authenticated)/dashboard/': {
+      id: '/(authenticated)/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard'
-      preLoaderRoute: typeof authenticateddashboardDashboardRouteImport
+      preLoaderRoute: typeof authenticatedDashboardIndexRouteImport
       parentRoute: typeof authenticatedRouteRoute
     }
-    '/(authenticated)/(dashboard)/timers/$timerId': {
-      id: '/(authenticated)/(dashboard)/timers/$timerId'
-      path: '/timers/$timerId'
-      fullPath: '/timers/$timerId'
-      preLoaderRoute: typeof authenticateddashboardTimersTimerIdRouteRouteImport
+    '/(authenticated)/dashboard/$weddingEventId/': {
+      id: '/(authenticated)/dashboard/$weddingEventId/'
+      path: '/dashboard/$weddingEventId'
+      fullPath: '/dashboard/$weddingEventId'
+      preLoaderRoute: typeof authenticatedDashboardWeddingEventIdIndexRouteImport
       parentRoute: typeof authenticatedRouteRoute
     }
-    '/(authenticated)/(dashboard)/timers/$timerId/edit': {
-      id: '/(authenticated)/(dashboard)/timers/$timerId/edit'
+    '/(authenticated)/dashboard/timers/$timerId': {
+      id: '/(authenticated)/dashboard/timers/$timerId'
+      path: '/dashboard/timers/$timerId'
+      fullPath: '/dashboard/timers/$timerId'
+      preLoaderRoute: typeof authenticatedDashboardTimersTimerIdRouteRouteImport
+      parentRoute: typeof authenticatedRouteRoute
+    }
+    '/(authenticated)/dashboard/timers/$timerId/edit': {
+      id: '/(authenticated)/dashboard/timers/$timerId/edit'
       path: '/edit'
-      fullPath: '/timers/$timerId/edit'
-      preLoaderRoute: typeof authenticateddashboardTimersTimerIdEditRouteImport
-      parentRoute: typeof authenticateddashboardTimersTimerIdRouteRoute
+      fullPath: '/dashboard/timers/$timerId/edit'
+      preLoaderRoute: typeof authenticatedDashboardTimersTimerIdEditRouteImport
+      parentRoute: typeof authenticatedDashboardTimersTimerIdRouteRoute
     }
   }
 }
@@ -269,30 +289,33 @@ const authPagesRouteRouteWithChildren = authPagesRouteRoute._addFileChildren(
   authPagesRouteRouteChildren,
 )
 
-interface authenticateddashboardTimersTimerIdRouteRouteChildren {
-  authenticateddashboardTimersTimerIdEditRoute: typeof authenticateddashboardTimersTimerIdEditRoute
+interface authenticatedDashboardTimersTimerIdRouteRouteChildren {
+  authenticatedDashboardTimersTimerIdEditRoute: typeof authenticatedDashboardTimersTimerIdEditRoute
 }
 
-const authenticateddashboardTimersTimerIdRouteRouteChildren: authenticateddashboardTimersTimerIdRouteRouteChildren =
+const authenticatedDashboardTimersTimerIdRouteRouteChildren: authenticatedDashboardTimersTimerIdRouteRouteChildren =
   {
-    authenticateddashboardTimersTimerIdEditRoute:
-      authenticateddashboardTimersTimerIdEditRoute,
+    authenticatedDashboardTimersTimerIdEditRoute:
+      authenticatedDashboardTimersTimerIdEditRoute,
   }
 
-const authenticateddashboardTimersTimerIdRouteRouteWithChildren =
-  authenticateddashboardTimersTimerIdRouteRoute._addFileChildren(
-    authenticateddashboardTimersTimerIdRouteRouteChildren,
+const authenticatedDashboardTimersTimerIdRouteRouteWithChildren =
+  authenticatedDashboardTimersTimerIdRouteRoute._addFileChildren(
+    authenticatedDashboardTimersTimerIdRouteRouteChildren,
   )
 
 interface authenticatedRouteRouteChildren {
-  authenticateddashboardDashboardRoute: typeof authenticateddashboardDashboardRoute
-  authenticateddashboardTimersTimerIdRouteRoute: typeof authenticateddashboardTimersTimerIdRouteRouteWithChildren
+  authenticatedDashboardIndexRoute: typeof authenticatedDashboardIndexRoute
+  authenticatedDashboardTimersTimerIdRouteRoute: typeof authenticatedDashboardTimersTimerIdRouteRouteWithChildren
+  authenticatedDashboardWeddingEventIdIndexRoute: typeof authenticatedDashboardWeddingEventIdIndexRoute
 }
 
 const authenticatedRouteRouteChildren: authenticatedRouteRouteChildren = {
-  authenticateddashboardDashboardRoute: authenticateddashboardDashboardRoute,
-  authenticateddashboardTimersTimerIdRouteRoute:
-    authenticateddashboardTimersTimerIdRouteRouteWithChildren,
+  authenticatedDashboardIndexRoute: authenticatedDashboardIndexRoute,
+  authenticatedDashboardTimersTimerIdRouteRoute:
+    authenticatedDashboardTimersTimerIdRouteRouteWithChildren,
+  authenticatedDashboardWeddingEventIdIndexRoute:
+    authenticatedDashboardWeddingEventIdIndexRoute,
 }
 
 const authenticatedRouteRouteWithChildren =
