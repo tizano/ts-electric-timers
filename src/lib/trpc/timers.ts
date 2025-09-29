@@ -1,11 +1,12 @@
 import { db } from '@/db';
-import { timer } from '@/db/schema/timer';
+import { timer, updateTimerSchema } from '@/db/schema/timer';
 import { weddingEvent } from '@/db/schema/wedding-event';
 import { env } from '@/env/server';
 import { authedProcedure, procedure, router } from '@/lib/trpc';
 import { and, eq, gt } from 'drizzle-orm';
 import Pusher from 'pusher';
 import z from 'zod';
+import { CHANNEL, TIMER_UPDATED } from '../utils';
 
 // export const ee = new EventEmitter(); // Global EventEmitter pour notifications
 
@@ -18,6 +19,40 @@ const pusher = new Pusher({
 });
 
 export const timersRouter = router({
+  getById: procedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const timer = await db.query.timer.findFirst({
+        where: (timer, { eq }) => eq(timer.id, input.id),
+        with: {
+          actions: true,
+        },
+      });
+      return timer;
+    }),
+
+  getCurrentTimerByWeddingEventId: procedure
+    .input(
+      z.object({
+        weddingEventId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const currentTimer = await db.query.timer.findFirst({
+        where: (timer, { eq }) =>
+          eq(timer.weddingEventId, input.weddingEventId),
+        orderBy: (timer, { asc }) => [asc(timer.orderIndex)],
+        with: {
+          actions: true,
+        },
+      });
+      return currentTimer;
+    }),
+
   listByWeddingEventId: procedure
     .input(
       z.object({
@@ -25,16 +60,6 @@ export const timersRouter = router({
       })
     )
     .query(async ({ input }) => {
-      // .default('wedding-event-1')
-      // const items = await ctx.db
-      //   .select()
-      //   .from(timer)
-      //   .innerJoin(timerAction, eq(timer.id, timerAction.timerId))
-      //   .where(eq(timer.weddingEventId, input.weddingEventId))
-      //   .orderBy(timer.orderIndex);
-      // if (!input.weddingEventId) {
-      //   throw new Error('weddingEventId is required');
-      // }
       const items = await db.query.timer.findMany({
         where: (timer, { eq }) =>
           eq(timer.weddingEventId, input.weddingEventId as string),
@@ -45,25 +70,81 @@ export const timersRouter = router({
       });
       return items;
     }),
-  addTimeToTimer: authedProcedure
+  updateTimer: authedProcedure
     .input(
       z.object({
+        ...updateTimerSchema.shape,
         id: z.string(),
-        additionalMinutes: z.number(),
-        currentTimerDuration: z.number(),
+        cascadeUpdate: z.boolean().optional(),
+        originalDurationMinutes: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
+      const { cascadeUpdate, originalDurationMinutes, ...updateData } = input;
+
+      const updatedTimer = await ctx.db
         .update(timer)
         .set({
-          durationMinutes: input.currentTimerDuration + input.additionalMinutes,
-          lastModifiedById: ctx.session.user.id,
+          ...updateData,
+          updatedAt: new Date(),
         })
-        .where(eq(timer.id, input.id));
-      pusher.trigger('my-channel', 'my-event', {
-        message: 'hello world time added',
+        .where(eq(timer.id, input.id))
+        .returning();
+
+      // Si cascade update est activé et qu'on a une nouvelle duration
+      if (
+        cascadeUpdate &&
+        updateData.durationMinutes &&
+        originalDurationMinutes !== undefined
+      ) {
+        const minutesDiff =
+          updateData.durationMinutes - originalDurationMinutes;
+
+        if (minutesDiff !== 0) {
+          // Récupérer le timer modifié pour obtenir son weddingEventId et orderIndex
+          const currentTimer = await ctx.db.query.timer.findFirst({
+            where: (timer, { eq }) => eq(timer.id, input.id),
+          });
+
+          if (currentTimer) {
+            // Mettre à jour tous les timers suivants
+            const followingTimers = await ctx.db.query.timer.findMany({
+              where: (timer, { eq, gt }) =>
+                and(
+                  eq(timer.weddingEventId, currentTimer.weddingEventId),
+                  gt(timer.orderIndex, currentTimer.orderIndex)
+                ),
+            });
+
+            // Décaler l'heure de début de chaque timer suivant
+            for (const followingTimer of followingTimers) {
+              if (followingTimer.scheduledStartTime) {
+                const newStartTime = new Date(
+                  followingTimer.scheduledStartTime
+                );
+                newStartTime.setMinutes(
+                  newStartTime.getMinutes() + minutesDiff
+                );
+
+                await ctx.db
+                  .update(timer)
+                  .set({
+                    scheduledStartTime: newStartTime,
+                    updatedAt: new Date(),
+                  })
+                  .where(eq(timer.id, followingTimer.id));
+              }
+            }
+          }
+        }
+      }
+
+      // Notifier les clients via Pusher
+      pusher.trigger(CHANNEL, TIMER_UPDATED, {
+        id: input.id,
       });
+
+      return updatedTimer;
     }),
   completeTimer: authedProcedure
     .input(
