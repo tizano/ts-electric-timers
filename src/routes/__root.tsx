@@ -11,6 +11,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 
 import { Toaster } from '@/components/ui/sonner';
 import { authQueryOptions, type AuthQueryResult } from '@/lib/auth/queries';
+import { PusherProvider } from '@/lib/pusher-context';
 import type { QueryClient } from '@tanstack/react-query';
 import appCss from '../styles.css?url';
 
@@ -54,7 +55,9 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <PusherProvider>
+        <Outlet />
+      </PusherProvider>
     </RootDocument>
   );
 }
