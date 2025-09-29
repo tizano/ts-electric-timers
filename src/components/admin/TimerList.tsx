@@ -1,5 +1,5 @@
 import type { RouterOutputs } from '@/lib/trpc-client';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '../ui/button';
 import TimerCard from './TimerCard';
 
@@ -25,7 +25,11 @@ export default function TimerList({
         <p className="font-bold">Demo Mode Enabled</p>
         <p>
           <span className="font-normal">
-            Go to <strong>/demo</strong> on the main app
+            Go to{' '}
+            <Link to="/demo" target="_blank" className="underline">
+              <strong>/demo</strong>
+            </Link>{' '}
+            on the main app
           </span>
         </p>
         <Button
@@ -67,9 +71,14 @@ export default function TimerList({
     <>
       {renderBannerDemoMode()}
       <div className="mb-4">{renderDemoButtons()}</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {timersWithActions.map((timer) => (
-          <TimerCard key={timer.id} timer={timer} actions={timer.actions} />
+          <TimerCard
+            key={timer.id}
+            timerData={timer}
+            actionsData={timer.actions}
+            isDemo={isDemo}
+          />
         ))}
       </div>
     </>
