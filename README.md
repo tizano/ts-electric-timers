@@ -7,22 +7,21 @@ src/
 │ ├── routes/
 │ │ ├── index.tsx # Page d'accueil avec liens
 │ │ ├── display/
-│ │ │ ├── $eventId.tsx # Affichage public du timer
 │ │ │ └── demo.tsx # Mode démo avec contrôles
 │ │ └── admin/
-│ │ ├── index.tsx # Liste des événements
+│ │ ├── index.tsx # Page principal affichant le timer courant
+│ │ └── demo.tsx # Mode démo avec contrôles
 │ │ └── $eventId.tsx # Gestion des timers
 │ ├── components/
 │ │ ├── timer/
 │ │ │ ├── TimerDisplay.tsx # Composant d'affichage du timer
 │ │ │ ├── TimerCountdown.tsx # Compte à rebours
 │ │ │ ├── ActionDisplay.tsx # Affichage des actions
-│ │ │ └── TimerProgress.tsx # Barre de progression
 │ │ ├── admin/
-│ │ │ ├── TimerList.tsx # Liste des timers admin
-│ │ │ ├── TimerCard.tsx # Carte d'un timer
-│ │ │ ├── ActionList.tsx # Liste des actions d'un timer
-│ │ │ └── StatusBadge.tsx # Badge de statut
+│ │ │ ├── TimerList.tsx # Liste des timers admin (deja fait)
+│ │ │ ├── TimerCard.tsx # Carte d'un timer avec l'affichage du timer (decompte) (deja fait mais ajouter le composant TimerDisplay)
+│ │ │ ├── ActionList.tsx # Liste des actions d'un timer (deja fait)
+│ │ │ └── StatusBadge.tsx # Badge de statut (deja fait)
 │ │ └── demo/
 │ │ └── DemoControls.tsx # Contrôles pour le mode démo
 │ └── lib/
@@ -36,17 +35,17 @@ src/
 
 ## Fonctionnalités principales
 
-### 1. Affichage public (`/display/:eventId`)
+### 1. Affichage public (`/`)
 
 - Affichage du timer en cours en grand
 - Compte à rebours visuel
 - Affichage des actions au bon moment
-- Polling intelligent basé sur le temps restant
+- Utilisation de Pusher
 - Support multilingue (FR/EN/BR)
 
-### 2. Mode démo (`/display/demo`)
+### 2. Mode démo (`/demo`)
 
-- Boutons pour sauter à chaque timer (-30s avant l'action)
+- Boutons pour sauter à chaque timer (-15s avant l'action)
 - Simulation accélérée possible
 - Reset facile
 - Indicateur visuel "MODE DEMO"
@@ -58,8 +57,4 @@ src/
 - Actions de chaque timer
 - Contrôles manuels pour les timers
 
-## Améliorations suggérées
-
-### Fonctionnelles
-
-1. **Websockets** (via Pusher/Ably) pour sync temps réel entre admin et display
+Faire clignoter le timer a la fin et attendre le displayDurationSec avant de passer au suivant

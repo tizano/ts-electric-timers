@@ -8,6 +8,13 @@
       "when": 1759010214917,
       "tag": "0000_chief_praxagora",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759094930137,
+      "tag": "0001_sharp_komodo",
+      "breakpoints": true
     }
   ]
 }

@@ -42,6 +42,7 @@ export const timer = pgTable('timer', {
   lastModifiedById: text('last_modified_by_id').references(() => user.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
 });
 
 export const timerAction = pgTable('timer_action', {
