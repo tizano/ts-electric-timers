@@ -1,25 +1,25 @@
 import { Button } from '@/components/ui/button';
-import { env } from '@/env/client';
+import { trpc } from '@/lib/trpc-client';
 import { createFileRoute } from '@tanstack/react-router';
-import Pusher from 'pusher-js';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
+  ssr: false,
+  loader: async ({ route }) => {
+    return trpc.timers.getCurrentTimerByWeddingEventId.query({
+      weddingEventId:
+        route.fullPath === '/demo' ? 'wedding-event-demo' : 'wedding-event-1',
+    });
+  },
 });
 
 function HomePage() {
   const navigate = Route.useNavigate();
-  Pusher.logToConsole = true;
-
-  const pusher = new Pusher(env.VITE_PUSHER_KEY, {
-    cluster: env.VITE_PUSHER_CLUSTER,
-  });
-
-  const channel = pusher.subscribe('my-channel');
-  channel.bind('my-event', function (data: unknown) {
-    console.log(data);
-  });
+  // const { currentTimer, isLoading } = usePusher();
   // video : https://us-west-2.graphassets.com/cm6cov50p0ooe06mweybhh1x1/cm6flfoqv35wf08mwecd41hmt
+
+  // refresh data from loader
+  const currentTimer = Route.useLoaderData();
 
   return (
     <main className="overflow-x-hidden relative">
@@ -37,6 +37,30 @@ function HomePage() {
             <h1 className="text-6xl font-bold mb-4 text-center relative text-gray-50">
               Tony & Neka
             </h1>
+            {currentTimer ? (
+              <div className="text-center text-gray-200 space-y-2">
+                <h2 className="text-2xl font-semibold">{currentTimer.name}</h2>
+                {currentTimer.scheduledStartTime && (
+                  <p className="text-lg">
+                    Programmé pour:{' '}
+                    {new Date(currentTimer.scheduledStartTime).toLocaleString(
+                      'fr-FR'
+                    )}
+                  </p>
+                )}
+                {currentTimer.durationMinutes &&
+                  currentTimer.durationMinutes > 0 && (
+                    <p className="text-md opacity-80">
+                      Durée: {currentTimer.durationMinutes} minutes
+                    </p>
+                  )}
+                <p className="text-sm opacity-60">
+                  Statut: {currentTimer.status || 'En attente'}
+                </p>
+              </div>
+            ) : (
+              <div className="text-xl text-gray-300">Aucun timer programmé</div>
+            )}
             <div className="absolute top-0 right-0 p-4 group">
               <Button
                 onClick={() =>
