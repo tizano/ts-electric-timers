@@ -11,25 +11,20 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as publicRouteRouteImport } from './routes/(public)/route'
 import { Route as authenticatedRouteRouteImport } from './routes/(authenticated)/route'
 import { Route as authPagesRouteRouteImport } from './routes/(auth-pages)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
-import { Route as publicTimersRouteImport } from './routes/(public)/timers'
 import { Route as authPagesLoginRouteImport } from './routes/(auth-pages)/login'
 import { Route as authenticatedDashboardIndexRouteImport } from './routes/(authenticated)/dashboard/index'
 import { Route as authenticatedDashboardWeddingEventIdIndexRouteImport } from './routes/(authenticated)/dashboard/$weddingEventId/index'
 import { Route as authenticatedDashboardTimersTimerIdIndexRouteImport } from './routes/(authenticated)/dashboard/timers/$timerId/index'
 import { ServerRoute as ApiAuthServerRouteImport } from './routes/api/auth'
 import { ServerRoute as ApiTrpcSplatServerRouteImport } from './routes/api/trpc/$'
+import { ServerRoute as ApiCronCheckTimersRouteServerRouteImport } from './routes/api/cron/check-timers/route'
 
 const rootServerRouteImport = createServerRootRoute()
 
-const publicRouteRoute = publicRouteRouteImport.update({
-  id: '/(public)',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const authenticatedRouteRoute = authenticatedRouteRouteImport.update({
   id: '/(authenticated)',
   getParentRoute: () => rootRouteImport,
@@ -47,11 +42,6 @@ const DemoIndexRoute = DemoIndexRouteImport.update({
   id: '/demo/',
   path: '/demo/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const publicTimersRoute = publicTimersRouteImport.update({
-  id: '/timers',
-  path: '/timers',
-  getParentRoute: () => publicRouteRoute,
 } as any)
 const authPagesLoginRoute = authPagesLoginRouteImport.update({
   id: '/login',
@@ -86,20 +76,24 @@ const ApiTrpcSplatServerRoute = ApiTrpcSplatServerRouteImport.update({
   path: '/api/trpc/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiCronCheckTimersRouteServerRoute =
+  ApiCronCheckTimersRouteServerRouteImport.update({
+    id: '/api/cron/check-timers',
+    path: '/api/cron/check-timers',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof publicRouteRouteWithChildren
+  '/': typeof authenticatedRouteRouteWithChildren
   '/login': typeof authPagesLoginRoute
-  '/timers': typeof publicTimersRoute
   '/demo': typeof DemoIndexRoute
   '/dashboard': typeof authenticatedDashboardIndexRoute
   '/dashboard/$weddingEventId': typeof authenticatedDashboardWeddingEventIdIndexRoute
   '/dashboard/timers/$timerId': typeof authenticatedDashboardTimersTimerIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof publicRouteRouteWithChildren
+  '/': typeof authenticatedRouteRouteWithChildren
   '/login': typeof authPagesLoginRoute
-  '/timers': typeof publicTimersRoute
   '/demo': typeof DemoIndexRoute
   '/dashboard': typeof authenticatedDashboardIndexRoute
   '/dashboard/$weddingEventId': typeof authenticatedDashboardWeddingEventIdIndexRoute
@@ -110,9 +104,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/(auth-pages)': typeof authPagesRouteRouteWithChildren
   '/(authenticated)': typeof authenticatedRouteRouteWithChildren
-  '/(public)': typeof publicRouteRouteWithChildren
   '/(auth-pages)/login': typeof authPagesLoginRoute
-  '/(public)/timers': typeof publicTimersRoute
   '/demo/': typeof DemoIndexRoute
   '/(authenticated)/dashboard/': typeof authenticatedDashboardIndexRoute
   '/(authenticated)/dashboard/$weddingEventId/': typeof authenticatedDashboardWeddingEventIdIndexRoute
@@ -123,7 +115,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/timers'
     | '/demo'
     | '/dashboard'
     | '/dashboard/$weddingEventId'
@@ -132,7 +123,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
-    | '/timers'
     | '/demo'
     | '/dashboard'
     | '/dashboard/$weddingEventId'
@@ -142,9 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/(auth-pages)'
     | '/(authenticated)'
-    | '/(public)'
     | '/(auth-pages)/login'
-    | '/(public)/timers'
     | '/demo/'
     | '/(authenticated)/dashboard/'
     | '/(authenticated)/dashboard/$weddingEventId/'
@@ -155,44 +143,40 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   authPagesRouteRoute: typeof authPagesRouteRouteWithChildren
   authenticatedRouteRoute: typeof authenticatedRouteRouteWithChildren
-  publicRouteRoute: typeof publicRouteRouteWithChildren
   DemoIndexRoute: typeof DemoIndexRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth': typeof ApiAuthServerRoute
+  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/auth' | '/api/trpc/$'
+  fullPaths: '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth' | '/api/trpc/$'
-  id: '__root__' | '/api/auth' | '/api/trpc/$'
+  to: '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
+  id: '__root__' | '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiAuthServerRoute: typeof ApiAuthServerRoute
+  ApiCronCheckTimersRouteServerRoute: typeof ApiCronCheckTimersRouteServerRoute
   ApiTrpcSplatServerRoute: typeof ApiTrpcSplatServerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(public)': {
-      id: '/(public)'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof publicRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(authenticated)': {
       id: '/(authenticated)'
       path: '/'
@@ -220,13 +204,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo'
       preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/(public)/timers': {
-      id: '/(public)/timers'
-      path: '/timers'
-      fullPath: '/timers'
-      preLoaderRoute: typeof publicTimersRouteImport
-      parentRoute: typeof publicRouteRoute
     }
     '/(auth-pages)/login': {
       id: '/(auth-pages)/login'
@@ -274,6 +251,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiTrpcSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/cron/check-timers': {
+      id: '/api/cron/check-timers'
+      path: '/api/cron/check-timers'
+      fullPath: '/api/cron/check-timers'
+      preLoaderRoute: typeof ApiCronCheckTimersRouteServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -306,23 +290,10 @@ const authenticatedRouteRouteChildren: authenticatedRouteRouteChildren = {
 const authenticatedRouteRouteWithChildren =
   authenticatedRouteRoute._addFileChildren(authenticatedRouteRouteChildren)
 
-interface publicRouteRouteChildren {
-  publicTimersRoute: typeof publicTimersRoute
-}
-
-const publicRouteRouteChildren: publicRouteRouteChildren = {
-  publicTimersRoute: publicTimersRoute,
-}
-
-const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
-  publicRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authPagesRouteRoute: authPagesRouteRouteWithChildren,
   authenticatedRouteRoute: authenticatedRouteRouteWithChildren,
-  publicRouteRoute: publicRouteRouteWithChildren,
   DemoIndexRoute: DemoIndexRoute,
 }
 export const routeTree = rootRouteImport
@@ -330,6 +301,7 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthServerRoute: ApiAuthServerRoute,
+  ApiCronCheckTimersRouteServerRoute: ApiCronCheckTimersRouteServerRoute,
   ApiTrpcSplatServerRoute: ApiTrpcSplatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport

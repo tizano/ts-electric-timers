@@ -29,6 +29,7 @@ export const weddingEvent = pgTable('wedding_event', {
     .references(() => user.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
 });
 
 export const weddingParticipant = pgTable('wedding_participant', {

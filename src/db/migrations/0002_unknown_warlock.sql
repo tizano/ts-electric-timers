@@ -1,0 +1,1 @@
+ALTER TABLE "timer_action" ADD COLUMN "urls" text[] DEFAULT ARRAY[]::text[] NOT NULL;

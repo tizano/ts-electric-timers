@@ -15,6 +15,20 @@
       "when": 1759094930137,
       "tag": "0001_sharp_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759185608059,
+      "tag": "0002_unknown_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759258568368,
+      "tag": "0003_silly_taskmaster",
+      "breakpoints": true
     }
   ]
 }

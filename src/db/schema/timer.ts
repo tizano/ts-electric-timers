@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   integer,
@@ -59,6 +60,10 @@ export const timerAction = pgTable('timer_action', {
 
   title: text('title'),
   url: text('url'), // pour sons/vidéos/images
+  urls: text('urls')
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::text[]`), // pour galeries
   // Multilingue pour les textes
   contentFr: text('content_fr'),
   contentEn: text('content_en'),

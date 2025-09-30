@@ -1,9 +1,9 @@
 import { db } from '@/db';
-import { timer, updateTimerSchema } from '@/db/schema/timer';
+import { timer, timerAction, updateTimerSchema } from '@/db/schema/timer';
 import { weddingEvent } from '@/db/schema/wedding-event';
 import { env } from '@/env/server';
 import { authedProcedure, procedure, router } from '@/lib/trpc';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, asc, eq, gt } from 'drizzle-orm';
 import Pusher from 'pusher';
 import z from 'zod';
 import { CHANNEL, TIMER_UPDATED } from '../utils';
@@ -65,7 +65,9 @@ export const timersRouter = router({
           eq(timer.weddingEventId, input.weddingEventId as string),
         orderBy: (timer, { asc }) => [asc(timer.orderIndex)],
         with: {
-          actions: true,
+          actions: {
+            orderBy: [asc(timerAction.orderIndex)],
+          },
         },
       });
       return items;
