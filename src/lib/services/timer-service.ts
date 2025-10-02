@@ -104,7 +104,7 @@ export class TimerService {
       .update(timer)
       .set({
         status: 'RUNNING',
-        actualStartTime: now,
+        startedAt: now,
         updatedAt: now,
       })
       .where(eq(timer.id, timerId));
@@ -164,7 +164,7 @@ export class TimerService {
         .update(timer)
         .set({
           status: 'RUNNING',
-          actualStartTime: now,
+          startedAt: now,
           updatedAt: now,
         })
         .where(eq(timer.id, timerId));
@@ -477,7 +477,7 @@ export class TimerService {
       .update(timer)
       .set({
         status: 'PENDING',
-        actualStartTime: null,
+        startedAt: null,
         completedAt: null,
         updatedAt: now,
       })
@@ -565,7 +565,7 @@ export class TimerService {
       .update(timer)
       .set({
         status: 'RUNNING',
-        actualStartTime: startTime.toDate(),
+        startedAt: startTime.toDate(),
         updatedAt: now.toDate(),
       })
       .where(eq(timer.id, timerId));

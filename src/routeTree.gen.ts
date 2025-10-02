@@ -21,7 +21,6 @@ import { Route as authenticatedDashboardWeddingEventIdIndexRouteImport } from '.
 import { Route as authenticatedDashboardTimersTimerIdIndexRouteImport } from './routes/(authenticated)/dashboard/timers/$timerId/index'
 import { ServerRoute as ApiAuthServerRouteImport } from './routes/api/auth'
 import { ServerRoute as ApiTrpcSplatServerRouteImport } from './routes/api/trpc/$'
-import { ServerRoute as ApiCronCheckTimersRouteServerRouteImport } from './routes/api/cron/check-timers/route'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -76,12 +75,6 @@ const ApiTrpcSplatServerRoute = ApiTrpcSplatServerRouteImport.update({
   path: '/api/trpc/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiCronCheckTimersRouteServerRoute =
-  ApiCronCheckTimersRouteServerRouteImport.update({
-    id: '/api/cron/check-timers',
-    path: '/api/cron/check-timers',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof authenticatedRouteRouteWithChildren
@@ -147,31 +140,27 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth': typeof ApiAuthServerRoute
-  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth': typeof ApiAuthServerRoute
-  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth': typeof ApiAuthServerRoute
-  '/api/cron/check-timers': typeof ApiCronCheckTimersRouteServerRoute
   '/api/trpc/$': typeof ApiTrpcSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
+  fullPaths: '/api/auth' | '/api/trpc/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
-  id: '__root__' | '/api/auth' | '/api/cron/check-timers' | '/api/trpc/$'
+  to: '/api/auth' | '/api/trpc/$'
+  id: '__root__' | '/api/auth' | '/api/trpc/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiAuthServerRoute: typeof ApiAuthServerRoute
-  ApiCronCheckTimersRouteServerRoute: typeof ApiCronCheckTimersRouteServerRoute
   ApiTrpcSplatServerRoute: typeof ApiTrpcSplatServerRoute
 }
 
@@ -251,13 +240,6 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiTrpcSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/cron/check-timers': {
-      id: '/api/cron/check-timers'
-      path: '/api/cron/check-timers'
-      fullPath: '/api/cron/check-timers'
-      preLoaderRoute: typeof ApiCronCheckTimersRouteServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
   }
 }
 
@@ -301,7 +283,6 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthServerRoute: ApiAuthServerRoute,
-  ApiCronCheckTimersRouteServerRoute: ApiCronCheckTimersRouteServerRoute,
   ApiTrpcSplatServerRoute: ApiTrpcSplatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport

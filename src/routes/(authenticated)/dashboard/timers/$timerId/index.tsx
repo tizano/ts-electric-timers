@@ -2,14 +2,26 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { Timer, UpdateTimer } from '@/db/schema/timer';
+import type { Timer } from '@/db/schema/timer';
 import { trpc } from '@/lib/trpc-client';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   createFileRoute,
   useCanGoBack,
   useRouter,
 } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+const updateTimerSchema = z.object({
+  name: z.string().min(1, 'Timer name is required'),
+  scheduledStartTime: z.string().optional(),
+  durationMinutes: z.number().min(0, 'Duration must be positive'),
+  cascadeUpdate: z.boolean(),
+});
+
+type UpdateTimerForm = z.infer<typeof updateTimerSchema>;
 
 export const Route = createFileRoute(
   '/(authenticated)/dashboard/timers/$timerId/'
@@ -31,75 +43,75 @@ function RouteComponent() {
   const router = useRouter();
   const canGoBack = useCanGoBack();
 
-  // State for form data
-  const [formData, setFormData] = useState<
-    UpdateTimer & { cascadeUpdate: boolean }
-  >({
-    orderIndex: 0,
-    name: '',
-    scheduledStartTime: null,
-    durationMinutes: 0,
-    lastModifiedById: '',
-    cascadeUpdate: false,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    setValue,
+    setError,
+  } = useForm<UpdateTimerForm>({
+    resolver: zodResolver(updateTimerSchema),
+    defaultValues: {
+      name: '',
+      scheduledStartTime: '',
+      durationMinutes: 0,
+      cascadeUpdate: false,
+    },
   });
-
-  const [originalDurationMinutes, setOriginalDurationMinutes] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [timerError, setTimerError] = useState<string | null>(null);
 
   // Populate form when timer data is loaded
   useEffect(() => {
-    setFormData({
-      name: timer.name,
-      scheduledStartTime: timer.scheduledStartTime,
-      durationMinutes: timer.durationMinutes || 0,
-      lastModifiedById: user.id,
-      cascadeUpdate: false,
-    });
-  }, []);
+    if (timer) {
+      console.log(timer.scheduledStartTime?.toISOString());
 
-  const handleInputChange = (
-    field: string,
-    value: string | number | boolean
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+      reset({
+        name: timer.name,
+        scheduledStartTime:
+          timer.scheduledStartTime?.toISOString().slice(0, 16) || undefined,
+        durationMinutes: timer.durationMinutes || 0,
+        cascadeUpdate: false,
+      });
+    }
+  }, [timer, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
+  const onSubmit = async (data: UpdateTimerForm) => {
     try {
-      const scheduledStartTime = formData.scheduledStartTime
-        ? new Date(formData.scheduledStartTime)
+      const scheduledStartTime = data.scheduledStartTime
+        ? new Date(data.scheduledStartTime)
         : null;
 
       await trpc.timers.updateTimer.mutate({
         id: timerId,
-        name: formData.name,
+        name: data.name,
         scheduledStartTime: scheduledStartTime,
-        durationMinutes: formData.durationMinutes,
-        lastModifiedById: formData.lastModifiedById,
+        durationMinutes: data.durationMinutes,
+        lastModifiedById: user.id,
         updatedAt: new Date(),
-        cascadeUpdate: formData.cascadeUpdate,
-        originalDurationMinutes,
+        cascadeUpdate: data.cascadeUpdate,
+        originalDurationMinutes: timer.durationMinutes || 0,
       });
 
       // Navigate back to dashboard on success
+      if (canGoBack) {
+        router.history.back();
+      } else {
+        navigate({ to: '/dashboard' });
+      }
     } catch (error) {
-      // Error handled by mutation
+      setError('root', {
+        message:
+          error instanceof Error
+            ? error.message
+            : 'An error occurred while updating the timer',
+      });
     }
   };
 
-  if (timerError || !timer) {
+  if (!timer) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-red-500">
-          Error loading timer: {timerError || 'Timer not found'}
-        </div>
+        <div className="text-red-500">Timer not found</div>
       </div>
     );
   }
@@ -112,10 +124,10 @@ function RouteComponent() {
           <CardTitle>Edit Timer: {timer.name}</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {errors.root && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
+                {errors.root.message}
               </div>
             )}
 
@@ -130,10 +142,12 @@ function RouteComponent() {
               <Input
                 id="name"
                 type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                required
+                {...register('name')}
+                className={errors.name ? 'border-red-500' : ''}
               />
+              {errors.name && (
+                <p className="text-sm text-red-600">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Scheduled Start Time */}
@@ -147,11 +161,14 @@ function RouteComponent() {
               <Input
                 id="scheduledStartTime"
                 type="datetime-local"
-                value={formData.scheduledStartTime?.toString() || ''}
-                onChange={(e) =>
-                  handleInputChange('scheduledStartTime', e.target.value)
-                }
+                {...register('scheduledStartTime')}
+                className={errors.scheduledStartTime ? 'border-red-500' : ''}
               />
+              {errors.scheduledStartTime && (
+                <p className="text-sm text-red-600">
+                  {errors.scheduledStartTime.message}
+                </p>
+              )}
             </div>
 
             {/* Duration Minutes */}
@@ -166,24 +183,16 @@ function RouteComponent() {
                 id="durationMinutes"
                 type="number"
                 min="0"
-                value={formData.durationMinutes || 0}
-                onChange={(e) =>
-                  handleInputChange(
-                    'durationMinutes',
-                    parseInt(e.target.value) || 0
-                  )
-                }
+                {...register('durationMinutes', {
+                  valueAsNumber: true,
+                })}
+                className={errors.durationMinutes ? 'border-red-500' : ''}
               />
-            </div>
-
-            {/* Last Modified By */}
-            <div className="space-y-2">
-              <label
-                htmlFor="lastModifiedById"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Last Modified By
-              </label>
+              {errors.durationMinutes && (
+                <p className="text-sm text-red-600">
+                  {errors.durationMinutes.message}
+                </p>
+              )}
             </div>
 
             {/* Cascade Update Checkbox */}
@@ -191,10 +200,7 @@ function RouteComponent() {
               <input
                 id="cascadeUpdate"
                 type="checkbox"
-                checked={formData.cascadeUpdate}
-                onChange={(e) =>
-                  handleInputChange('cascadeUpdate', e.target.checked)
-                }
+                {...register('cascadeUpdate')}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label
@@ -221,12 +227,12 @@ function RouteComponent() {
                     navigate({ to: '/dashboard' });
                   }
                 }}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : 'Save Changes'}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
