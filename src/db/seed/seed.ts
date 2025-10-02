@@ -85,7 +85,7 @@ async function seedWeddingData() {
       id: 'wedding-event-1',
       name: 'Mariage Tony et Neka',
       description: 'Célébration du mariage de Tony et Neka',
-      eventDate: new Date('2025-10-25'),
+      eventDate: new Date('2025-10-25T16:00:00.000Z'),
       location: 'Recife',
       isDemo: false,
       ownerId: createdUsers[0]?.id,
@@ -100,7 +100,7 @@ async function seedWeddingData() {
       id: 'wedding-event-demo',
       name: 'DEMO - Mariage Tony et Neka',
       description: 'Célébration du mariage de Tony et Neka',
-      eventDate: new Date('2025-10-25'),
+      eventDate: new Date('2025-10-25T16:00:00.000Z'),
       location: 'Recife',
       isDemo: true,
       ownerId: createdUsers[0]?.id,
@@ -644,7 +644,6 @@ async function seedWeddingData() {
       contentFr: 'Discours des témoins',
       contentEn: 'Speech of best men and maids of honour',
       contentBr: 'Discurso das testemunhas',
-      triggerType: 'BEFORE_END',
       triggerOffsetMinutes: -10,
       displayDurationSec: 60 * 2, // 2 min
     },
@@ -686,7 +685,6 @@ async function seedWeddingData() {
       contentFr: 'Activité table par table',
       contentEn: 'Table-by-table activity',
       contentBr: 'Atividade mesa por mesa',
-      triggerType: 'BEFORE_END',
       triggerOffsetMinutes: -10,
       displayDurationSec: 60 * 2, // 2 min
     },
@@ -720,7 +718,6 @@ async function seedWeddingData() {
       contentEn: 'Bouquet toss',
       contentBr: 'Jogar o buquê',
       triggerOffsetMinutes: -10,
-      triggerType: 'BEFORE_END',
       displayDurationSec: 60 * 2, // 2 min
     },
     // Timer 10: Sound - Starting Bouquet toss
@@ -872,7 +869,6 @@ async function seedWeddingData() {
       contentFr: 'Discours des témoins',
       contentEn: 'Speech of best men and maids of honour',
       contentBr: 'Discurso das testemunhas',
-      triggerType: 'BEFORE_END',
       triggerOffsetMinutes: -10,
       displayDurationSec: 60 * 2, // 2 min
     },
@@ -914,7 +910,6 @@ async function seedWeddingData() {
       contentFr: 'Activité table par table',
       contentEn: 'Table-by-table activity',
       contentBr: 'Atividade mesa por mesa',
-      triggerType: 'BEFORE_END',
       triggerOffsetMinutes: -10,
       displayDurationSec: 60 * 2, // 2 min
     },
@@ -948,7 +943,6 @@ async function seedWeddingData() {
       contentEn: 'Bouquet toss',
       contentBr: 'Jogar o buquê',
       triggerOffsetMinutes: -10,
-      triggerType: 'BEFORE_END',
       displayDurationSec: 60 * 2, // 2 min
     },
     // Timer 10: Sound - Starting Bouquet toss
@@ -1060,7 +1054,7 @@ async function seedWeddingData() {
   console.log('\n⏰ Planning des timers:');
   timers.forEach((timer, index) => {
     const startTime = timer.scheduledStartTime
-      ? new Date(timer.scheduledStartTime).toLocaleString()
+      ? new Date(timer.scheduledStartTime).toISOString()
       : 'N/A';
     console.log(
       `${index + 1}. ${startTime} - ${timer.name} (${timer.durationMinutes}min)`

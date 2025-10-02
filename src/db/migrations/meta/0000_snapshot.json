@@ -1,5 +1,5 @@
 {
-  "id": "83c6cf11-c877-4a0c-8f2e-1a2ac13f97dd",
+  "id": "56f26d09-57d7-42be-8e59-554a5e36bc8f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -332,12 +332,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "actual_start_time": {
-          "name": "actual_start_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
         "duration_minutes": {
           "name": "duration_minutes",
           "type": "integer",
@@ -347,7 +341,7 @@
         },
         "status": {
           "name": "status",
-          "type": "timer_status",
+          "type": "status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -392,6 +386,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -465,25 +471,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "trigger_type": {
-          "name": "trigger_type",
-          "type": "trigger_type",
+        "status": {
+          "name": "status",
+          "type": "status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'AT_END'"
+          "default": "'PENDING'"
         },
         "trigger_offset_minutes": {
           "name": "trigger_offset_minutes",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
-        },
-        "executed_at": {
-          "name": "executed_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "title": {
           "name": "title",
@@ -496,6 +497,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "urls": {
+          "name": "urls",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
         },
         "content_fr": {
           "name": "content_fr",
@@ -534,6 +542,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "executed_at": {
+          "name": "executed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -624,6 +638,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -732,22 +752,13 @@
         "VIDEO"
       ]
     },
-    "public.timer_status": {
-      "name": "timer_status",
+    "public.status": {
+      "name": "status",
       "schema": "public",
       "values": [
         "PENDING",
         "RUNNING",
         "COMPLETED"
-      ]
-    },
-    "public.trigger_type": {
-      "name": "trigger_type",
-      "schema": "public",
-      "values": [
-        "AFTER_START",
-        "BEFORE_END",
-        "AT_END"
       ]
     },
     "public.participant_role": {

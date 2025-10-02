@@ -13,8 +13,6 @@ export const env = createEnv({
     VITE_PUSHER_KEY: z.string().min(1),
     PUSHER_SECRET: z.string().min(1),
     VITE_PUSHER_CLUSTER: z.string().min(1),
-
-    CRON_SECRET: z.string().min(1),
   },
   runtimeEnv: process.env,
 });

@@ -12,14 +12,12 @@ import z from 'zod';
 import { user } from './auth';
 import { weddingEvent } from './wedding-event';
 
-export const TIMER_STATUSES = ['PENDING', 'RUNNING', 'COMPLETED'] as const;
+export const STATUSES = ['PENDING', 'RUNNING', 'COMPLETED'] as const;
 export const ASSET_TYPES = ['GALLERY', 'IMAGE', 'SOUND', 'VIDEO'] as const;
-export const TRIGGER_TYPES = ['AFTER_START', 'BEFORE_END', 'AT_END'] as const;
 
 // Enums
-export const timerStatusEnum = pgEnum('timer_status', TIMER_STATUSES);
+export const statusEnum = pgEnum('status', STATUSES);
 export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPES);
-export const triggerTypeEnum = pgEnum('trigger_type', TRIGGER_TYPES);
 
 export const timer = pgTable('timer', {
   id: text('id').primaryKey(),
@@ -28,11 +26,10 @@ export const timer = pgTable('timer', {
     .references(() => weddingEvent.id, { onDelete: 'cascade' }),
 
   name: text('name').notNull(),
-  scheduledStartTime: timestamp('scheduled_start_time'), // Obligatoire pour punctual
-  actualStartTime: timestamp('actual_start_time'), // Démarrage réel
+  scheduledStartTime: timestamp('scheduled_start_time'),
   durationMinutes: integer('duration_minutes').default(0), // 0 ou null = punctual (pas de countdown)
 
-  status: timerStatusEnum('status').default('PENDING').notNull(),
+  status: statusEnum('status').default('PENDING').notNull(),
   isManual: boolean('is_manual').default(false).notNull(), // Gardé, pour trigger manuel indépendamment
 
   orderIndex: integer('order_index').notNull().default(0),
@@ -41,9 +38,14 @@ export const timer = pgTable('timer', {
     .notNull()
     .references(() => user.id),
   lastModifiedById: text('last_modified_by_id').references(() => user.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  startedAt: timestamp('started_at', { withTimezone: true }),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
 });
 
 export const timerAction = pgTable('timer_action', {
@@ -53,11 +55,10 @@ export const timerAction = pgTable('timer_action', {
     .references(() => timer.id, { onDelete: 'cascade' }),
 
   type: assetTypeEnum('type').notNull(), // SOUND, VIDEO, IMAGE, TEXT, GALLERY
-  triggerType: triggerTypeEnum('trigger_type').default('AT_END').notNull(), // Ajout: BEFORE_END (use offset), AT_END, etc.
-  triggerOffsetMinutes: integer('trigger_offset_minutes'), // Seulement si duration > 0
-
-  executedAt: timestamp('executed_at'),
-
+  status: statusEnum('status').default('PENDING').notNull(),
+  triggerOffsetMinutes: integer('trigger_offset_minutes').notNull().default(0), // Seulement si duration > 0, peut être négatif
+  // si triggerOffsetMinutes = 0 à la fin du timer
+  // si triggerOffsetMinutes < 0 avant la fin (-15 pour 15 min avant la fin du timer)
   title: text('title'),
   url: text('url'), // pour sons/vidéos/images
   urls: text('urls')
@@ -72,7 +73,10 @@ export const timerAction = pgTable('timer_action', {
   orderIndex: integer('order_index').notNull().default(0),
   displayDurationSec: integer('display_duration_sec'),
 
-  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  executedAt: timestamp('executed_at', { withTimezone: true }),
 });
 
 const { createInsertSchema, createSelectSchema, createUpdateSchema } =

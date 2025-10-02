@@ -71,18 +71,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster />
-        <TanStackDevtools
-          plugins={[
-            {
-              name: 'TanStack Query',
-              render: <ReactQueryDevtoolsPanel />,
-            },
-            {
-              name: 'TanStack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {process.env.NODE_ENV === 'development' && (
+          <TanStackDevtools
+            plugins={[
+              {
+                name: 'TanStack Query',
+                render: <ReactQueryDevtoolsPanel />,
+              },
+              {
+                name: 'TanStack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
+
         <Scripts />
       </body>
     </html>

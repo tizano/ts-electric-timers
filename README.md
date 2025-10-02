@@ -58,8 +58,10 @@ Faire clignoter le timer a la fin et attendre le displayDurationSec avant de pas
 
 ## Logique des timers
 
-- Utilise un système de queue avec p-queue pour eviter le chevauchement entre deux timer qui ont une scheduledStartTime et une durationMinutes > 0
-- Chaque timers a des actions a executé a different timing du timer en cours : 'AFTER_START', 'BEFORE_END', 'AT_END' donc aussi un systeme de queue et peux etre lancé apres X minutes du depart du timer avec le champs triggerOffsetMinutes
+- Utilise un système de queue pour eviter le chevauchement entre deux timer qui ont une scheduledStartTime et une durationMinutes > 0
+- Chaque timers a des actions a executer a different timing du timer en cours et peuvent etre lancées apres X minutes du depart du timer avec le champs triggerOffsetMinutes
+  - si triggerOffsetMinutes = 0 à la fin du timer
+  - si triggerOffsetMinutes < 0 avant la fin (-15 pour 15 min avant la fin du timer)
 - Une action se complete a la fin du media en cours de lecture parmis : 'GALLERY', 'IMAGE', 'SOUND', 'VIDEO' ou bien attends le temps defini par le champ displayDuration puis met a jour le champs executedAt
 - Si c'etait la derniere action a etre executé et que le displayDuration arrive a la fin alors on met a jour le timer en modifiant le champs completedAt et status a COMPLETED
 - Une fois complété, on recupere le timer suivant en fonction du orderIndex qui doit etre superieur au timer qui vient d'etre completé, ce nouveau timer est egalement mis a jour dans le weddingEvent en cours sur le champs currentTimerId
@@ -68,22 +70,24 @@ Faire clignoter le timer a la fin et attendre le displayDurationSec avant de pas
 - Un timer 'manuel' n'a pas de scheduledStartTime et possède une durationMinutes = 0 ou null, il y a aussi un booleen isManual qui permet de le differencier, comme le ponctuel, il peut etre declenché en meme temps qu'un timer en cours.
 - L'action de type gallery, place un overlay avec un carousel d'image (Swiper JS) avec les images disponibles dans le champs urls. En meme que l'affichage du carousel, il faut afficher les champs title contentFr, contentEn, contentBt si l'un d'eux est renseigné et aussi afficher le decompte du timer en plus petit
 
-1. Admin clique "Démarrer le mariage"
+1. Le front fait du polling vers un endpoint :
    → cherche le premier timer par orderIndex
-   → startTimer() → status = RUNNING, actualStartTime = now
+   → verifie si le timer doit etre activé s'il est egal ou après la date et heure de debut de l'event
+   → startTimer() → status = RUNNING, startedAt = now
    → Pusher envoie event
-2. Frontend reçoit l'event
+2. Frontend reçoit l'event de pusher
    → useQuery re-fetch
    → Affiche countdown basé sur actualStartTime + durationMinutes
    → Calcule quand afficher chaque action
-3. Action atteint son moment (ex: BEFORE_END - 2min)
+3. Action atteint son moment (ex: triggerOffsetMinutes = -2) soit 2min avant la fin
    → Frontend affiche l'overlay/média
    → Attend la fin (durée média + displayDuration)
    → Appelle executeAction(actionId)
 4. Dernière action terminée
    → executeAction() détecte que c'est la dernière
-   → Appelle completeTimer()
+   → Appelle completeTimer() a la fin du media en cours de lecture puis complete le timer courant et cherche le timer suivant
+   → dans le next timer on calcul la nouvelle durationMinutes avec nextTimer.scheduledStartTime - currentTimer.completedAt
    → currentTimerId = next timer
    → Pusher envoie event
 5. Frontend reçoit l'event
-   → Affiche le nouveau timer
+   → Affiche le nouveau timer avec la nouvelle durée

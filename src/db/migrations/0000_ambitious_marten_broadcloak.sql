@@ -1,6 +1,5 @@
 CREATE TYPE "public"."asset_type" AS ENUM('GALLERY', 'IMAGE', 'SOUND', 'VIDEO');--> statement-breakpoint
-CREATE TYPE "public"."timer_status" AS ENUM('PENDING', 'RUNNING', 'COMPLETED');--> statement-breakpoint
-CREATE TYPE "public"."trigger_type" AS ENUM('AFTER_START', 'BEFORE_END', 'AT_END');--> statement-breakpoint
+CREATE TYPE "public"."status" AS ENUM('PENDING', 'RUNNING', 'COMPLETED');--> statement-breakpoint
 CREATE TYPE "public"."participant_role" AS ENUM('OWNER', 'COORDINATOR', 'PARTICIPANT', 'VIEW_ONLY');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -55,32 +54,34 @@ CREATE TABLE "timer" (
 	"wedding_event_id" text NOT NULL,
 	"name" text NOT NULL,
 	"scheduled_start_time" timestamp,
-	"actual_start_time" timestamp,
 	"duration_minutes" integer DEFAULT 0,
-	"status" timer_status DEFAULT 'PENDING' NOT NULL,
+	"status" "status" DEFAULT 'PENDING' NOT NULL,
 	"is_manual" boolean DEFAULT false NOT NULL,
 	"order_index" integer DEFAULT 0 NOT NULL,
 	"created_by_id" text NOT NULL,
 	"last_modified_by_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"started_at" timestamp,
+	"completed_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "timer_action" (
 	"id" text PRIMARY KEY NOT NULL,
 	"timer_id" text NOT NULL,
 	"type" "asset_type" NOT NULL,
-	"trigger_type" "trigger_type" DEFAULT 'AT_END' NOT NULL,
-	"trigger_offset_minutes" integer,
-	"executed_at" timestamp,
+	"status" "status" DEFAULT 'PENDING' NOT NULL,
+	"trigger_offset_minutes" integer DEFAULT 0 NOT NULL,
 	"title" text,
 	"url" text,
+	"urls" text[] DEFAULT ARRAY[]::text[] NOT NULL,
 	"content_fr" text,
 	"content_en" text,
 	"content_br" text,
 	"order_index" integer DEFAULT 0 NOT NULL,
 	"display_duration_sec" integer,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"executed_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "wedding_event" (
@@ -93,7 +94,8 @@ CREATE TABLE "wedding_event" (
 	"current_timer_id" text,
 	"owner_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"completed_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "wedding_participant" (

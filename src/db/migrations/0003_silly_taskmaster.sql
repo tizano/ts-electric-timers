@@ -1,1 +1,0 @@
-ALTER TABLE "wedding_event" ADD COLUMN "completed_at" timestamp;
